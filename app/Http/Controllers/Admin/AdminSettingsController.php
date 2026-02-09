@@ -41,7 +41,7 @@ class AdminSettingsController extends Controller
         Setting::set('ads_footer_code', $data['ads_footer_code'] ?? '');
         Setting::set('ads_between_restaurants_code', $data['ads_between_restaurants_code'] ?? '');
 
-        return redirect()->route('admin.settings')
+        return redirect()->route('admin.settings.index')
             ->with('success', 'تم حفظ الإعدادات بنجاح');
     }
 }
