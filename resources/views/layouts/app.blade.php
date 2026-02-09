@@ -9,6 +9,10 @@
 
     <title>@yield('title', 'منيوهات العرب - دليل منيوهات المطاعم')</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,16 +141,7 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="text-xl font-bold text-primary-600">منيوهات العرب</span>
-                        <p class="text-xs text-gray-400 -mt-1">دليل منيوهات المطاعم</p>
-                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="منيوهات العرب" class="h-12 w-auto">
                 </a>
 
                 <!-- Quick Search (Desktop) -->
@@ -208,30 +203,28 @@
                 <div>
                     <h4 class="text-lg font-semibold text-white mb-3">إحصائيات</h4>
                     @php
-                        $stats = Cache::remember('site_statistics', 3600, function() {
-                            return [
-                                'restaurants' => \App\Models\Restaurant::whereNotNull('last_scraped_at')->count(),
-                                'cities' => \App\Models\City::count(),
-                                'categories' => \App\Models\Category::count(),
-                                'menus' => \App\Models\MenuImage::count(),
-                            ];
-                        });
+                        $footerStats = cache()->get('site_statistics', [
+                            'total_restaurants' => \App\Models\Restaurant::count(),
+                            'total_cities' => \App\Models\City::count(),
+                            'total_categories' => \App\Models\Category::count(),
+                            'scraped_restaurants' => \App\Models\Restaurant::whereNotNull('last_scraped_at')->count(),
+                        ]);
                     @endphp
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($stats['restaurants']) }}</span>
+                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($footerStats['scraped_restaurants'] ?? 0) }}</span>
                             <span class="text-gray-400">مطعم</span>
                         </div>
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($stats['cities']) }}</span>
+                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($footerStats['total_cities'] ?? 0) }}</span>
                             <span class="text-gray-400">مدينة</span>
                         </div>
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-accent-400 text-lg font-bold">{{ number_format($stats['categories']) }}</span>
+                            <span class="block text-accent-400 text-lg font-bold">{{ number_format($footerStats['total_categories'] ?? 0) }}</span>
                             <span class="text-gray-400">فئة</span>
                         </div>
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-accent-400 text-lg font-bold">{{ number_format($stats['menus']) }}</span>
+                            <span class="block text-accent-400 text-lg font-bold">{{ number_format(\App\Models\MenuImage::count()) }}</span>
                             <span class="text-gray-400">صورة منيو</span>
                         </div>
                     </div>
