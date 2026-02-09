@@ -138,7 +138,7 @@
 
                 {{-- Ad between restaurants --}}
                 @if(($adsEnabled ?? false) && !empty($adsBetweenCode ?? '') && $index > 0 && $index % 6 === 0)
-                    <div class="col-span-full ads-container py-2">{!! $adsBetweenCode !!}</div>
+                    <div class="col-span-full ad-slot ads-container py-2">{!! $adsBetweenCode !!}</div>
                 @endif
 
                 <a href="{{ route('restaurant.show', $restaurant->slug) }}"

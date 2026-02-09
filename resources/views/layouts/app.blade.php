@@ -128,6 +128,15 @@
         .lazy-image.loaded {
             opacity: 1;
         }
+        
+        /* Cookie banner animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
 
         /* Smooth scroll */
         html {
@@ -194,7 +203,7 @@
     <main class="flex-1">
         <!-- Header Ad -->
         @if(($adsEnabled ?? false) && !empty($adsHeaderCode ?? ''))
-            <div class="ads-container ads-header max-w-7xl mx-auto px-4 py-2">
+            <div class="ads-container ads-header ad-slot max-w-7xl mx-auto px-4 py-2">
                 {!! $adsHeaderCode !!}
             </div>
         @endif
@@ -203,7 +212,7 @@
 
         <!-- Footer Ad -->
         @if(($adsEnabled ?? false) && !empty($adsFooterCode ?? ''))
-            <div class="ads-container ads-footer max-w-7xl mx-auto px-4 py-4">
+            <div class="ads-container ads-footer ad-slot max-w-7xl mx-auto px-4 py-4">
                 {!! $adsFooterCode !!}
             </div>
         @endif
@@ -279,6 +288,46 @@
         <div class="lightbox-nav lightbox-next" onclick="nextImage()">←</div>
         <img id="lightbox-img" src="" alt="Menu Image">
         <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-1 rounded-full" id="lightbox-counter"></div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000] items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-fade-in" dir="{{ ($isRtl ?? true) ? 'rtl' : 'ltr' }}">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                        {{ ($currentLocale ?? 'ar') === 'ar' ? 'ملفات تعريف الارتباط (Cookies)' : 'Cookie Consent' }}
+                    </h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        {{ ($currentLocale ?? 'ar') === 'ar' 
+                            ? 'نستخدم ملفات تعريف الارتباط لتحسين تجربتك وعرض إعلانات مخصصة. بالموافقة، تسمح لنا باستخدام هذه الملفات.' 
+                            : 'We use cookies to improve your experience and show personalized ads. By accepting, you allow us to use these cookies.' }}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col-reverse sm:flex-row gap-3">
+                <button id="decline-cookies" 
+                    class="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm">
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'رفض' : 'Decline' }}
+                </button>
+                <button id="accept-cookies" 
+                    class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg">
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'موافق' : 'Accept' }}
+                </button>
+            </div>
+            
+            <p class="text-xs text-gray-400 mt-4 text-center">
+                {{ ($currentLocale ?? 'ar') === 'ar' 
+                    ? 'يمكنك تغيير تفضيلاتك في أي وقت من إعدادات المتصفح' 
+                    : 'You can change your preferences anytime in your browser settings' }}
+            </p>
+        </div>
     </div>
 
     <script>
@@ -403,6 +452,54 @@
 
             lazyImages.forEach(img => observer.observe(img));
         });
+
+        // ====== COOKIE CONSENT ======
+        (function() {
+            const CONSENT_KEY = 'nakol_eh_cookie_consent';
+            const consentModal = document.getElementById('cookie-consent');
+            const adSlots = document.querySelectorAll('.ad-slot');
+            
+            // Check if consent has been given
+            const consent = localStorage.getItem(CONSENT_KEY);
+            
+            // Hide ads if consent was declined
+            if (consent === 'declined') {
+                adSlots.forEach(slot => slot.style.display = 'none');
+            }
+            
+            if (!consent) {
+                // Hide ads until consent is given
+                adSlots.forEach(slot => slot.style.display = 'none');
+                
+                // Show consent banner after a short delay
+                setTimeout(() => {
+                    consentModal.classList.remove('hidden');
+                    consentModal.classList.add('flex');
+                }, 1000);
+            }
+            
+            // Accept button
+            document.getElementById('accept-cookies').addEventListener('click', () => {
+                localStorage.setItem(CONSENT_KEY, 'accepted');
+                consentModal.classList.add('hidden');
+                consentModal.classList.remove('flex');
+                // Show ads
+                adSlots.forEach(slot => slot.style.display = '');
+                // Reload to initialize AdSense if needed
+                if ({{ ($adsEnabled ?? false) ? 'true' : 'false' }}) {
+                    setTimeout(() => location.reload(), 300);
+                }
+            });
+            
+            // Decline button
+            document.getElementById('decline-cookies').addEventListener('click', () => {
+                localStorage.setItem(CONSENT_KEY, 'declined');
+                consentModal.classList.add('hidden');
+                consentModal.classList.remove('flex');
+                // Keep ads hidden
+                adSlots.forEach(slot => slot.style.display = 'none');
+            });
+        })();
     </script>
 
     @stack('scripts')

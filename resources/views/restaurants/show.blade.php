@@ -106,7 +106,7 @@
 
         <!-- Ad: Under Restaurant Header (native-looking, labeled) -->
         @if(($adsEnabled ?? false) && !empty($adsRestaurantHeaderCode ?? ''))
-            <div class="mb-8 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
+            <div class="ad-slot mb-8 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
                 <div class="text-[10px] text-gray-300 uppercase tracking-wider mb-0.5">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعلان' : 'Ad' }}</div>
                 {!! $adsRestaurantHeaderCode !!}
             </div>
@@ -168,7 +168,7 @@
 
         <!-- Ad: After Menu Images -->
         @if(($adsEnabled ?? false) && !empty($adsAfterMenuCode ?? ''))
-            <div class="mb-8 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
+            <div class="ad-slot mb-8 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
                 <div class="text-[10px] text-gray-300 uppercase tracking-wider mb-0.5">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعلان' : 'Ad' }}</div>
                 {!! $adsAfterMenuCode !!}
             </div>
@@ -239,7 +239,7 @@
             @if(($adsEnabled ?? false) && !empty($adsSidebarCode ?? ''))
                 <div class="lg:w-72 flex-shrink-0">
                     <div class="lg:sticky lg:top-24">
-                        <div class="rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
+                        <div class="ad-slot rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
                             <div class="text-[10px] text-gray-300 uppercase tracking-wider mb-0.5">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعلان' : 'Ad' }}</div>
                             {!! $adsSidebarCode !!}
                         </div>
