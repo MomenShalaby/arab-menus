@@ -78,10 +78,49 @@
                                 {{ $restaurant->menuImages->count() }} صورة للمنيو
                             </div>
                         @endif
+
+                        @if($restaurant->updated_at_source)
+                            <div class="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                آخر تحديث: {{ $restaurant->updated_at_source->format('Y-m-d') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Branches Section -->
+        @if($restaurant->branches && $restaurant->branches->isNotEmpty())
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 p-6 sm:p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    الفروع ({{ $restaurant->branches->count() }})
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    @foreach($restaurant->branches as $branch)
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <h3 class="font-bold text-gray-800 text-sm mb-1">{{ $branch->name_ar ?? $branch->name }}</h3>
+                            @if($branch->address)
+                                <p class="text-xs text-gray-500 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    </svg>
+                                    {{ $branch->address_ar ?? $branch->address }}
+                                </p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         <!-- Menu Images Gallery -->
         @if($restaurant->menuImages->isNotEmpty())

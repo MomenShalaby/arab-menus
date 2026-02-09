@@ -24,7 +24,7 @@
                         <option value="">جميع المدن</option>
                         @foreach($cities as $city)
                             <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>
-                                {{ $city->name }}
+                                {{ $city->name_ar ?? $city->name }}
                             </option>
                         @endforeach
                     </select>
@@ -41,7 +41,7 @@
                         <option value="">جميع الأقسام</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ ($filters['category_id'] ?? '') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
+                                {{ $category->name_ar ?? $category->name }}
                             </option>
                         @endforeach
                     </select>
@@ -162,7 +162,7 @@
             zones.forEach(zone => {
                 const option = document.createElement('option');
                 option.value = zone.id;
-                option.textContent = zone.name;
+                option.textContent = zone.name_ar || zone.name;
                 if (selectedZoneId && selectedZoneId == zone.id) {
                     option.selected = true;
                 }

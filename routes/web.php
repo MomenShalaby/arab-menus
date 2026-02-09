@@ -25,3 +25,11 @@ Route::get('/restaurant/{slug}', [RestaurantController::class, 'show'])->name('r
 Route::get('/api/zones/{cityId}', [RestaurantController::class, 'zones'])
     ->where('cityId', '[0-9]+')
     ->name('api.zones');
+
+// API: Live search restaurants (autocomplete)
+Route::get('/api/search', [RestaurantController::class, 'liveSearch'])
+    ->name('api.search');
+
+// API: Get random restaurant (ناكل ايه)
+Route::get('/api/random-restaurant', [RestaurantController::class, 'randomRestaurant'])
+    ->name('api.random-restaurant');

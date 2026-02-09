@@ -24,6 +24,7 @@ class HomeController extends Controller
             'categories' => $this->restaurantService->getCategories(),
             'featured' => $this->restaurantService->getFeaturedRestaurants(),
             'stats' => $this->restaurantService->getStatistics(),
+            'defaultCityId' => $this->restaurantService->getDefaultCityId(),
         ]);
     }
 

@@ -23,6 +23,17 @@ class RestaurantService
     private const PER_PAGE = 24;
 
     /**
+     * Get the default city (Tanta).
+     */
+    public function getDefaultCityId(): ?int
+    {
+        return Cache::remember('default_city_id', self::CACHE_TTL_MINUTES * 60, function (): ?int {
+            $city = City::where('slug', 'tanta')->first();
+            return $city?->id;
+        });
+    }
+
+    /**
      * Get all cities with zone counts, cached.
      *
      * @return Collection<int, City>
@@ -126,7 +137,7 @@ class RestaurantService
         return Cache::remember(
             "restaurant_{$slug}",
             self::CACHE_TTL_MINUTES * 60,
-            fn(): ?Restaurant => Restaurant::with(['menuImages', 'categories', 'cities', 'zones'])
+            fn(): ?Restaurant => Restaurant::with(['menuImages', 'categories', 'cities', 'zones', 'branches'])
                 ->where('slug', $slug)
                 ->first(),
         );
@@ -191,5 +202,67 @@ class RestaurantService
             'total_categories' => Category::count(),
             'scraped_restaurants' => Restaurant::whereNotNull('last_scraped_at')->count(),
         ]);
+    }
+
+    /**
+     * Live search for restaurants by name (returns limited results for autocomplete).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function liveSearch(string $query, int $limit = 10): array
+    {
+        $cacheKey = 'live_search_' . md5($query . '_' . $limit);
+
+        return Cache::remember($cacheKey, 300, function () use ($query, $limit): array {
+            return Restaurant::whereNotNull('last_scraped_at')
+                ->where(function (Builder $q) use ($query): void {
+                    $q->where('name', 'LIKE', "%{$query}%")
+                        ->orWhere('name_ar', 'LIKE', "%{$query}%")
+                        ->orWhere('slug', 'LIKE', "%{$query}%");
+                })
+                ->with('categories:id,name,name_ar')
+                ->limit($limit)
+                ->get(['id', 'name', 'name_ar', 'slug', 'logo_url', 'hotline'])
+                ->map(fn(Restaurant $r) => [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'name_ar' => $r->name_ar,
+                    'slug' => $r->slug,
+                    'logo_url' => $r->logo_url,
+                    'hotline' => $r->hotline,
+                    'categories' => $r->categories->map(fn($c) => [
+                        'name' => $c->name,
+                        'name_ar' => $c->name_ar,
+                    ]),
+                    'url' => route('restaurant.show', $r->slug),
+                ])
+                ->toArray();
+        });
+    }
+
+    /**
+     * Get a random restaurant from selected categories.
+     *
+     * @param array<int> $categoryIds
+     */
+    public function getRandomRestaurant(array $categoryIds = [], ?int $cityId = null): ?Restaurant
+    {
+        $query = Restaurant::whereNotNull('last_scraped_at')
+            ->whereHas('menuImages')
+            ->with(['categories', 'menuImages']);
+
+        if (! empty($categoryIds)) {
+            $query->whereHas('categories', function (Builder $q) use ($categoryIds): void {
+                $q->whereIn('categories.id', $categoryIds);
+            });
+        }
+
+        if ($cityId) {
+            $query->whereHas('cities', function (Builder $q) use ($cityId): void {
+                $q->where('cities.id', $cityId);
+            });
+        }
+
+        return $query->inRandomOrder()->first();
     }
 }

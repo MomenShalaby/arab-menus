@@ -199,86 +199,147 @@ class LocationScraper
     {
         $knownData = [
             [
-                'city' => 'Cairo', 'slug' => 'Cairo',
+                'city' => 'Cairo', 'slug' => 'Cairo', 'city_ar' => 'القاهرة',
                 'zones' => [
-                    ['name' => 'Nasr City', 'slug' => 'nasr-city'],
-                    ['name' => 'Masr El Gdida', 'slug' => 'masr-el-gdida'],
-                    ['name' => 'Mohandeseen', 'slug' => 'mohandeseen'],
-                    ['name' => 'Maadi', 'slug' => 'maadi'],
-                    ['name' => 'Haram', 'slug' => 'haram'],
-                    ['name' => 'Downtown', 'slug' => 'downtown'],
-                    ['name' => 'Shoubra', 'slug' => 'shoubra'],
-                    ['name' => 'New Cairo', 'slug' => 'new-cairo'],
-                    ['name' => 'Sheikh Zayed', 'slug' => 'sheikh-zayed'],
-                    ['name' => '6 October', 'slug' => '6-October'],
-                    ['name' => 'El Rehab', 'slug' => 'el-rehab'],
-                    ['name' => 'El Obour', 'slug' => 'el-obour'],
-                    ['name' => 'Faisal', 'slug' => 'faisal'],
-                    ['name' => 'Mokattam', 'slug' => 'mokattam'],
-                    ['name' => 'Ain Shams', 'slug' => 'ain-shams'],
-                    ['name' => 'El Manial', 'slug' => 'el-manial'],
-                    ['name' => 'Zamalek', 'slug' => 'zamalek'],
+                    ['name' => 'Nasr City', 'slug' => 'nasr-city', 'name_ar' => 'مدينة نصر'],
+                    ['name' => 'Masr El Gdida', 'slug' => 'masr-el-gdida', 'name_ar' => 'مصر الجديدة'],
+                    ['name' => 'Mohandeseen', 'slug' => 'mohandeseen', 'name_ar' => 'المهندسين'],
+                    ['name' => 'Maadi', 'slug' => 'maadi', 'name_ar' => 'المعادي'],
+                    ['name' => 'Haram', 'slug' => 'haram', 'name_ar' => 'الهرم'],
+                    ['name' => 'Downtown', 'slug' => 'downtown', 'name_ar' => 'وسط البلد'],
+                    ['name' => 'Shoubra', 'slug' => 'shoubra', 'name_ar' => 'شبرا'],
+                    ['name' => 'New Cairo', 'slug' => 'new-cairo', 'name_ar' => 'القاهرة الجديدة'],
+                    ['name' => 'Sheikh Zayed', 'slug' => 'sheikh-zayed', 'name_ar' => 'الشيخ زايد'],
+                    ['name' => '6 October', 'slug' => '6-October', 'name_ar' => '6 أكتوبر'],
+                    ['name' => 'El Rehab', 'slug' => 'el-rehab', 'name_ar' => 'الرحاب'],
+                    ['name' => 'El Obour', 'slug' => 'el-obour', 'name_ar' => 'العبور'],
+                    ['name' => 'Faisal', 'slug' => 'faisal', 'name_ar' => 'فيصل'],
+                    ['name' => 'Mokattam', 'slug' => 'mokattam', 'name_ar' => 'المقطم'],
+                    ['name' => 'Ain Shams', 'slug' => 'ain-shams', 'name_ar' => 'عين شمس'],
+                    ['name' => 'El Manial', 'slug' => 'el-manial', 'name_ar' => 'المنيل'],
+                    ['name' => 'Zamalek', 'slug' => 'zamalek', 'name_ar' => 'الزمالك'],
                 ],
             ],
             [
-                'city' => 'Alexandria', 'slug' => 'alexandria',
+                'city' => 'Alexandria', 'slug' => 'alexandria', 'city_ar' => 'الإسكندرية',
                 'zones' => [
-                    ['name' => 'Smouha', 'slug' => 'smouha'],
-                    ['name' => 'Gleem', 'slug' => 'gleem'],
-                    ['name' => 'San Stefano', 'slug' => 'san-stefano'],
-                    ['name' => 'Mandara', 'slug' => 'mandara'],
-                    ['name' => 'Miami', 'slug' => 'miami'],
-                    ['name' => 'Sidi Bishr', 'slug' => 'sidi-bishr'],
-                    ['name' => 'Montazah', 'slug' => 'montazah'],
-                    ['name' => 'Roushdy', 'slug' => 'roushdy'],
+                    ['name' => 'Smouha', 'slug' => 'smouha', 'name_ar' => 'سموحة'],
+                    ['name' => 'Gleem', 'slug' => 'gleem', 'name_ar' => 'جليم'],
+                    ['name' => 'San Stefano', 'slug' => 'san-stefano', 'name_ar' => 'سان ستيفانو'],
+                    ['name' => 'Mandara', 'slug' => 'mandara', 'name_ar' => 'المندرة'],
+                    ['name' => 'Miami', 'slug' => 'miami', 'name_ar' => 'ميامي'],
+                    ['name' => 'Sidi Bishr', 'slug' => 'sidi-bishr', 'name_ar' => 'سيدي بشر'],
+                    ['name' => 'Montazah', 'slug' => 'montazah', 'name_ar' => 'المنتزه'],
+                    ['name' => 'Roushdy', 'slug' => 'roushdy', 'name_ar' => 'رشدي'],
                 ],
             ],
             [
-                'city' => 'Tanta', 'slug' => 'tanta',
+                'city' => 'Tanta', 'slug' => 'tanta', 'city_ar' => 'طنطا',
                 'zones' => [
-                    ['name' => 'Tanta', 'slug' => 'tanta'],
+                    ['name' => 'Tanta', 'slug' => 'tanta', 'name_ar' => 'طنطا'],
                 ],
             ],
             [
-                'city' => 'Mansoura', 'slug' => 'mansoura',
+                'city' => 'Mansoura', 'slug' => 'mansoura', 'city_ar' => 'المنصورة',
                 'zones' => [
-                    ['name' => 'Mansoura', 'slug' => 'mansoura'],
+                    ['name' => 'Mansoura', 'slug' => 'mansoura', 'name_ar' => 'المنصورة'],
                 ],
             ],
             [
-                'city' => 'Zagazig', 'slug' => 'zagazig',
+                'city' => 'Zagazig', 'slug' => 'zagazig', 'city_ar' => 'الزقازيق',
                 'zones' => [
-                    ['name' => 'Zagazig', 'slug' => 'zagazig'],
+                    ['name' => 'Zagazig', 'slug' => 'zagazig', 'name_ar' => 'الزقازيق'],
                 ],
             ],
             [
-                'city' => 'Ismailia', 'slug' => 'ismailia',
+                'city' => 'Ismailia', 'slug' => 'ismailia', 'city_ar' => 'الإسماعيلية',
                 'zones' => [
-                    ['name' => 'Ismailia', 'slug' => 'ismailia'],
+                    ['name' => 'Ismailia', 'slug' => 'ismailia', 'name_ar' => 'الإسماعيلية'],
                 ],
             ],
             [
-                'city' => 'Assiut', 'slug' => 'assiut',
+                'city' => 'Assiut', 'slug' => 'assiut', 'city_ar' => 'أسيوط',
                 'zones' => [
-                    ['name' => 'Assiut', 'slug' => 'assiut'],
+                    ['name' => 'Assiut', 'slug' => 'assiut', 'name_ar' => 'أسيوط'],
                 ],
             ],
             [
-                'city' => 'Port Said', 'slug' => 'port-said',
+                'city' => 'Port Said', 'slug' => 'port-said', 'city_ar' => 'بورسعيد',
                 'zones' => [
-                    ['name' => 'Port Said', 'slug' => 'port-said'],
+                    ['name' => 'Port Said', 'slug' => 'port-said', 'name_ar' => 'بورسعيد'],
                 ],
             ],
             [
-                'city' => 'Suez', 'slug' => 'suez',
+                'city' => 'Suez', 'slug' => 'suez', 'city_ar' => 'السويس',
                 'zones' => [
-                    ['name' => 'Suez', 'slug' => 'suez'],
+                    ['name' => 'Suez', 'slug' => 'suez', 'name_ar' => 'السويس'],
                 ],
             ],
             [
-                'city' => 'Damietta', 'slug' => 'damietta',
+                'city' => 'Damietta', 'slug' => 'damietta', 'city_ar' => 'دمياط',
                 'zones' => [
-                    ['name' => 'Damietta', 'slug' => 'damietta'],
+                    ['name' => 'Damietta', 'slug' => 'damietta', 'name_ar' => 'دمياط'],
+                ],
+            ],
+            [
+                'city' => 'Beni Suef', 'slug' => 'beni-suef', 'city_ar' => 'بني سويف',
+                'zones' => [
+                    ['name' => 'Beni Suef', 'slug' => 'beni-suef', 'name_ar' => 'بني سويف'],
+                ],
+            ],
+            [
+                'city' => 'Minia', 'slug' => 'minia', 'city_ar' => 'المنيا',
+                'zones' => [
+                    ['name' => 'Minia', 'slug' => 'minia', 'name_ar' => 'المنيا'],
+                ],
+            ],
+            [
+                'city' => 'Sohag', 'slug' => 'sohag', 'city_ar' => 'سوهاج',
+                'zones' => [
+                    ['name' => 'Sohag', 'slug' => 'sohag', 'name_ar' => 'سوهاج'],
+                ],
+            ],
+            [
+                'city' => 'Qena', 'slug' => 'qena', 'city_ar' => 'قنا',
+                'zones' => [
+                    ['name' => 'Qena', 'slug' => 'qena', 'name_ar' => 'قنا'],
+                ],
+            ],
+            [
+                'city' => 'Luxor', 'slug' => 'luxor', 'city_ar' => 'الأقصر',
+                'zones' => [
+                    ['name' => 'Luxor', 'slug' => 'luxor', 'name_ar' => 'الأقصر'],
+                ],
+            ],
+            [
+                'city' => 'Aswan', 'slug' => 'aswan', 'city_ar' => 'أسوان',
+                'zones' => [
+                    ['name' => 'Aswan', 'slug' => 'aswan', 'name_ar' => 'أسوان'],
+                ],
+            ],
+            [
+                'city' => 'Red Sea', 'slug' => 'Red-Sea', 'city_ar' => 'البحر الأحمر',
+                'zones' => [
+                    ['name' => 'Hurghada', 'slug' => 'hurghada', 'name_ar' => 'الغردقة'],
+                    ['name' => 'Sharm El Sheikh', 'slug' => 'sharm-el-sheikh', 'name_ar' => 'شرم الشيخ'],
+                ],
+            ],
+            [
+                'city' => 'Kafr El Sheikh', 'slug' => 'kafr-el-sheikh', 'city_ar' => 'كفر الشيخ',
+                'zones' => [
+                    ['name' => 'Kafr El Sheikh', 'slug' => 'kafr-el-sheikh', 'name_ar' => 'كفر الشيخ'],
+                ],
+            ],
+            [
+                'city' => 'Sharqia', 'slug' => 'sharqia', 'city_ar' => 'الشرقية',
+                'zones' => [
+                    ['name' => '10th of Ramadan', 'slug' => '10th-of-ramadan', 'name_ar' => 'العاشر من رمضان'],
+                ],
+            ],
+            [
+                'city' => 'Fayoum', 'slug' => 'fayoum', 'city_ar' => 'الفيوم',
+                'zones' => [
+                    ['name' => 'Fayoum', 'slug' => 'fayoum', 'name_ar' => 'الفيوم'],
                 ],
             ],
         ];
@@ -287,6 +348,7 @@ class LocationScraper
             fn(array $data) => new LocationData(
                 cityName: $data['city'],
                 citySlug: $data['slug'],
+                cityNameAr: $data['city_ar'] ?? null,
                 zones: $data['zones'],
             ),
             $knownData,

@@ -12,6 +12,7 @@ final readonly class RestaurantData
     /**
      * @param string[] $categories
      * @param string[] $menuImageUrls
+     * @param array<int, array{name: string, address: string, source_url?: string}> $branches
      */
     public function __construct(
         public string $name,
@@ -23,6 +24,8 @@ final readonly class RestaurantData
         public array $categories = [],
         public array $menuImageUrls = [],
         public ?string $description = null,
+        public ?string $updatedAtSource = null,
+        public array $branches = [],
     ) {}
 
     /**
@@ -42,6 +45,8 @@ final readonly class RestaurantData
             categories: $data['categories'] ?? [],
             menuImageUrls: $data['menu_image_urls'] ?? [],
             description: $data['description'] ?? null,
+            updatedAtSource: $data['updated_at_source'] ?? null,
+            branches: $data['branches'] ?? [],
         );
     }
 }

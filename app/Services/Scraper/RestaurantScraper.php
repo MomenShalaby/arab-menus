@@ -272,14 +272,31 @@ class RestaurantScraper
                 $h1 = $crawler->filter('h1');
                 if ($h1->count() > 0) {
                     $name = trim($h1->first()->text(''));
-                    // Clean up "Menu Egypt Restaurant hotline..." prefix
+                    // Clean up common suffixes/prefixes from page titles
                     $name = preg_replace('/^Menu Egypt\s+/i', '', $name);
-                    $name = preg_replace('/\s+hotline.*$/i', '', $name);
+                    $name = preg_replace('/\s+(hotline|number|delivery|menu|egypt|phone|order|prices?)[\s,].*$/i', '', $name);
+                    $name = preg_replace('/\s+(Cafe|Restaurant|Restaurants)\s+(menu|hotline|delivery).*$/i', '', $name);
+                    $name = preg_replace('/\s+menu\s*,?.*$/i', '', $name);
                     $name = preg_replace('/\s+menu$/i', '', $name);
-                    $name = trim($name);
+                    $name = rtrim(trim($name), ',');
                 }
             } catch (\Exception) {
                 // fallback
+            }
+
+            // Try to get cleaner name from title tag or og:title
+            if (empty($name) || strlen($name) > 60) {
+                try {
+                    $ogTitle = $crawler->filter('meta[property="og:title"]');
+                    if ($ogTitle->count() > 0) {
+                        $ogName = trim($ogTitle->first()->attr('content') ?? '');
+                        $ogName = preg_replace('/\s+(menu|hotline|delivery|egypt).*$/i', '', $ogName);
+                        $ogName = rtrim(trim($ogName), ',');
+                        if (!empty($ogName) && strlen($ogName) < strlen($name)) {
+                            $name = $ogName;
+                        }
+                    }
+                } catch (\Exception) {}
             }
 
             if (empty($name)) {
@@ -313,38 +330,52 @@ class RestaurantScraper
                 // No logo found
             }
 
-            // Extract menu images
+            // Extract menu images (full-size only, convert _s thumbnails to full-size)
             $menuImageUrls = [];
             try {
-                // Menu images are in img tags with src containing "restaurants_menus"
-                $menuImgs = $crawler->filter('img[src*="restaurants_menus"]');
-                $menuImgs->each(function (Crawler $img) use (&$menuImageUrls): void {
-                    $src = $img->attr('src') ?? $img->attr('data-src') ?? '';
-                    if (! empty($src)) {
-                        if (! str_starts_with($src, 'http')) {
-                            $src = $this->httpClient->resolveUrl($src);
-                        }
-                        // Skip tiny icons or ads
-                        if (! str_contains($src, 'icon') && ! str_contains($src, 'ad_')) {
-                            $menuImageUrls[] = $src;
+                // First try: extract full-size URLs from JS/JSON arrays on the page
+                $pageHtml = $crawler->html();
+                preg_match_all('#https?://[^"\s]+/restaurants_menus/[^"\s]+#', $pageHtml, $fullMatches);
+                if (!empty($fullMatches[0])) {
+                    foreach ($fullMatches[0] as $url) {
+                        $url = strtok($url, '?') ?: $url;
+                        if (!str_contains($url, 'restaurants_menus_s')) {
+                            $menuImageUrls[] = $url;
                         }
                     }
-                });
+                }
 
-                // Also check for lazy-loaded images (data-src)
-                $lazyImgs = $crawler->filter('img[data-src*="restaurants_menus"]');
-                $lazyImgs->each(function (Crawler $img) use (&$menuImageUrls): void {
-                    $src = $img->attr('data-src') ?? '';
-                    if (! empty($src) && ! in_array($src, $menuImageUrls, true)) {
-                        if (! str_starts_with($src, 'http')) {
+                // If no full-size images found in JS, get from img tags and convert _s to full
+                if (empty($menuImageUrls)) {
+                    $allMenuSrcs = [];
+                    $crawler->filter('img[src*="restaurants_menus"]')->each(
+                        function (Crawler $img) use (&$allMenuSrcs): void {
+                            $src = $img->attr('src') ?? '';
+                            if (!empty($src) && str_contains($src, 'restaurants_menus')) {
+                                $allMenuSrcs[] = $src;
+                            }
+                        }
+                    );
+
+                    foreach ($allMenuSrcs as $src) {
+                        // Skip tiny icons or ads
+                        if (str_contains($src, 'icon') || str_contains($src, 'ad_')) {
+                            continue;
+                        }
+                        // Strip cache-busting query strings
+                        $src = strtok($src, '?') ?: $src;
+                        // Convert _s thumbnail to full-size:
+                        // restaurants_menus_s/slug_menu_1_s.jpg -> restaurants_menus/slug_menu_1.jpg
+                        $src = str_replace('restaurants_menus_s/', 'restaurants_menus/', $src);
+                        $src = preg_replace('/_s\.(jpg|png|jpeg|webp)$/i', '.$1', $src);
+                        if (!str_starts_with($src, 'http')) {
                             $src = $this->httpClient->resolveUrl($src);
                         }
                         $menuImageUrls[] = $src;
                     }
-                });
+                }
 
-                // Try to find additional menu images by pattern
-                // Pattern: /restaurants_menus/{slug}_menu_{n}.jpg
+                // Try to find additional menu images by pattern if none found
                 if (empty($menuImageUrls)) {
                     for ($i = 1; $i <= 20; $i++) {
                         $testUrl = $this->httpClient->resolveUrl(
@@ -359,6 +390,53 @@ class RestaurantScraper
 
             // Remove duplicates
             $menuImageUrls = array_unique($menuImageUrls);
+            $menuImageUrls = array_values($menuImageUrls);
+
+            // Extract "Updated on" date
+            $updatedAtSource = null;
+            try {
+                $pageText = $crawler->filter('body')->text('');
+                if (preg_match('/Updated on[:\s]*(\d{4}-\d{2}-\d{2})/i', $pageText, $m)) {
+                    $updatedAtSource = $m[1];
+                }
+            } catch (\Exception) {
+                // no date found
+            }
+
+            // Extract branches
+            $branches = [];
+            try {
+                // Branches are often under h5 tags with address text, followed by links
+                $crawler->filter('h5')->each(function (Crawler $h5) use (&$branches, $slug): void {
+                    $address = trim($h5->text(''));
+                    if (empty($address) || strlen($address) < 3) {
+                        return;
+                    }
+                    // Skip if this h5 is just a section header (not an address)
+                    if (str_contains(strtolower($address), 'menu') || str_contains(strtolower($address), 'category')) {
+                        return;
+                    }
+                    // Find the next sibling or nearby link for branch name
+                    $branchName = null;
+                    try {
+                        $parent = $h5->closest('div');
+                        if ($parent && $parent->count() > 0) {
+                            $link = $parent->filter('a');
+                            if ($link->count() > 0) {
+                                $branchName = trim($link->first()->text(''));
+                            }
+                        }
+                    } catch (\Exception) {
+                        // no branch name found
+                    }
+                    $branches[] = [
+                        'name' => $branchName ?: $address,
+                        'address' => $address,
+                    ];
+                });
+            } catch (\Exception) {
+                // no branches
+            }
 
             // Extract categories from page text
             $categories = [];
@@ -384,11 +462,95 @@ class RestaurantScraper
                 'source_url' => $this->httpClient->resolveUrl("/{$slug}"),
                 'categories' => array_filter($categories),
                 'menu_image_urls' => array_values($menuImageUrls),
+                'updated_at_source' => $updatedAtSource,
+                'branches' => $branches,
             ]);
         } catch (\Exception $e) {
             Log::error("Failed to extract restaurant detail for {$slug}: {$e->getMessage()}");
             return null;
         }
+    }
+
+    /**
+     * Known Arabic translations for common food categories.
+     */
+    private const CATEGORY_AR_MAP = [
+        'pizza' => 'بيتزا',
+        'burgers' => 'برجر',
+        'burger' => 'برجر',
+        'chicken' => 'دجاج / فراخ',
+        'sandwiches' => 'ساندوتشات',
+        'sandwich' => 'ساندوتشات',
+        'seafood' => 'مأكولات بحرية',
+        'grills' => 'مشويات',
+        'grill' => 'مشويات',
+        'oriental' => 'أكل شرقي',
+        'desserts' => 'حلويات',
+        'dessert' => 'حلويات',
+        'sweets' => 'حلويات',
+        'pastries' => 'معجنات',
+        'pasta' => 'مكرونة / باستا',
+        'crepe' => 'كريب',
+        'crepes' => 'كريب',
+        'shawerma' => 'شاورما',
+        'shawarma' => 'شاورما',
+        'koshary' => 'كشري',
+        'koshari' => 'كشري',
+        'kushary' => 'كشري',
+        'kebab' => 'كباب',
+        'foul' => 'فول',
+        'falafel' => 'فلافل / طعمية',
+        'taameya' => 'فلافل / طعمية',
+        'juice' => 'عصائر',
+        'juices' => 'عصائر',
+        'drinks' => 'مشروبات',
+        'beverages' => 'مشروبات',
+        'coffee' => 'قهوة',
+        'cafe' => 'كافيه',
+        'breakfast' => 'إفطار',
+        'sushi' => 'سوشي',
+        'chinese' => 'أكل صيني',
+        'asian' => 'أكل آسيوي',
+        'indian' => 'أكل هندي',
+        'italian' => 'أكل إيطالي',
+        'syrian' => 'أكل سوري',
+        'lebanese' => 'أكل لبناني',
+        'egyptian' => 'أكل مصري',
+        'fateer' => 'فطير',
+        'fiteer' => 'فطير',
+        'hawawshi' => 'حواوشي',
+        'liver' => 'كبدة',
+        'ice cream' => 'آيس كريم',
+        'waffle' => 'وافل',
+        'waffles' => 'وافل',
+        'cake' => 'كيك',
+        'cakes' => 'كيك',
+        'meals' => 'وجبات',
+        'meal' => 'وجبات',
+        'fried chicken' => 'دجاج مقلي',
+        'broasted' => 'بروستد',
+        'hot dog' => 'هوت دوج',
+        'wraps' => 'لفائف',
+        'salad' => 'سلطات',
+        'salads' => 'سلطات',
+        'soup' => 'شوربة',
+        'soups' => 'شوربة',
+        'appetizers' => 'مقبلات',
+        'sides' => 'أطباق جانبية',
+        'rice' => 'أرز',
+        'meat' => 'لحوم',
+        'fish' => 'أسماك',
+        'family meals' => 'وجبات عائلية',
+        'kids meals' => 'وجبات أطفال',
+    ];
+
+    /**
+     * Get Arabic name for a category.
+     */
+    private function getCategoryArName(string $categoryName): ?string
+    {
+        $lower = strtolower(trim($categoryName));
+        return self::CATEGORY_AR_MAP[$lower] ?? null;
     }
 
     /**
@@ -431,8 +593,16 @@ class RestaurantScraper
 
                 $category = Category::firstOrCreate(
                     ['slug' => Str::slug($categoryName)],
-                    ['name' => $categoryName],
+                    [
+                        'name' => $categoryName,
+                        'name_ar' => $this->getCategoryArName($categoryName),
+                    ],
                 );
+
+                // Update AR name if missing
+                if (empty($category->name_ar) && $arName = $this->getCategoryArName($categoryName)) {
+                    $category->update(['name_ar' => $arName]);
+                }
 
                 $restaurant->categories()->syncWithoutDetaching([$category->id]);
             }
@@ -453,9 +623,25 @@ class RestaurantScraper
                 'hotline' => $data->hotline,
                 'source_url' => $data->sourceUrl,
                 'description' => $data->description,
+                'updated_at_source' => $data->updatedAtSource,
                 'last_scraped_at' => now(),
             ],
         );
+
+        // Persist branches
+        if (! empty($data->branches)) {
+            foreach ($data->branches as $branchData) {
+                \App\Models\Branch::updateOrCreate(
+                    [
+                        'restaurant_id' => $restaurant->id,
+                        'name' => $branchData['name'] ?? $branchData['address'] ?? 'Branch',
+                    ],
+                    [
+                        'address' => $branchData['address'] ?? null,
+                    ],
+                );
+            }
+        }
 
         // Download and store logo
         if ($data->logoUrl) {

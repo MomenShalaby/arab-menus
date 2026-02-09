@@ -24,12 +24,14 @@ class Restaurant extends Model
         'source_url',
         'total_views',
         'last_scraped_at',
+        'updated_at_source',
     ];
 
     protected function casts(): array
     {
         return [
             'last_scraped_at' => 'datetime',
+            'updated_at_source' => 'date',
             'total_views' => 'integer',
         ];
     }
@@ -40,6 +42,14 @@ class Restaurant extends Model
     public function menuImages(): HasMany
     {
         return $this->hasMany(MenuImage::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Get all branches for this restaurant.
+     */
+    public function branches(): HasMany
+    {
+        return $this->hasMany(Branch::class);
     }
 
     /**
