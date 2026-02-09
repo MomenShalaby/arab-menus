@@ -42,4 +42,23 @@ class HomeController extends Controller
             'filters' => $filters,
         ]);
     }
+
+    /**
+     * Display ناكل ايه page (random restaurant picker).
+     */
+    public function naklEih(): View
+    {
+        return view('nakl-eih', [
+            'cities' => $this->restaurantService->getCities(),
+            'categories' => $this->restaurantService->getCategories(),
+        ]);
+    }
+
+    /**
+     * Display picker wheel page.
+     */
+    public function pickerWheel(): View
+    {
+        return view('picker-wheel');
+    }
 }

@@ -168,6 +168,8 @@
                 <div class="flex items-center gap-4">
                     <a href="{{ route('home') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">الرئيسية</a>
                     <a href="{{ route('search') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">تصفح المطاعم</a>
+                    <a href="{{ route('nakl-eih') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">ناكل ايه؟</a>
+                    <a href="{{ route('picker-wheel') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">عجلة الاختيار</a>
                 </div>
             </div>
         </div>
@@ -197,20 +199,40 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="{{ route('home') }}" class="hover:text-primary-400 transition-colors">الصفحة الرئيسية</a></li>
                         <li><a href="{{ route('search') }}" class="hover:text-primary-400 transition-colors">تصفح المطاعم</a></li>
+                        <li><a href="{{ route('nakl-eih') }}" class="hover:text-primary-400 transition-colors">ناكل ايه؟</a></li>
+                        <li><a href="{{ route('picker-wheel') }}" class="hover:text-primary-400 transition-colors">عجلة الاختيار</a></li>
                     </ul>
                 </div>
 
                 <!-- Stats -->
                 <div>
                     <h4 class="text-lg font-semibold text-white mb-3">إحصائيات</h4>
+                    @php
+                        $stats = Cache::remember('site_statistics', 3600, function() {
+                            return [
+                                'restaurants' => \App\Models\Restaurant::whereNotNull('last_scraped_at')->count(),
+                                'cities' => \App\Models\City::count(),
+                                'categories' => \App\Models\Category::count(),
+                                'menus' => \App\Models\MenuImage::count(),
+                            ];
+                        });
+                    @endphp
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-primary-400 text-lg font-bold" id="stat-restaurants">-</span>
+                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($stats['restaurants']) }}</span>
                             <span class="text-gray-400">مطعم</span>
                         </div>
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-primary-400 text-lg font-bold" id="stat-cities">-</span>
+                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($stats['cities']) }}</span>
                             <span class="text-gray-400">مدينة</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg p-3 text-center">
+                            <span class="block text-accent-400 text-lg font-bold">{{ number_format($stats['categories']) }}</span>
+                            <span class="text-gray-400">فئة</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg p-3 text-center">
+                            <span class="block text-accent-400 text-lg font-bold">{{ number_format($stats['menus']) }}</span>
+                            <span class="text-gray-400">صورة منيو</span>
                         </div>
                     </div>
                 </div>

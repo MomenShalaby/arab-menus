@@ -303,6 +303,76 @@ class RestaurantScraper
                 $name = ucwords(str_replace('-', ' ', $slug));
             }
 
+            // Extract Arabic name (name_ar)
+            // Strategy: The English page embeds the Arabic name in several places:
+            // 1. mailto: sharing link has subject=الاسم_بالعربي%20menu
+            // 2. Branch URLs contain /slug/الاسم_بالعربي-فرع/category
+            // 3. "اكتشاف المزيد" section sometimes has the Arabic name
+            $nameAr = null;
+            try {
+                $pageHtml = $crawler->html();
+
+                // Method 1: Extract from mailto: subject line (most reliable)
+                // Pattern: mailto:?subject=كنتاكى%20menu or subject=كنتاكى menu
+                if (preg_match('/mailto:\?subject=([^&"]+)/i', $pageHtml, $mailMatch)) {
+                    $subject = urldecode($mailMatch[1]);
+                    // Remove " menu and contacts" or similar suffixes
+                    $subject = preg_replace('/\s*(menu|and|contacts|delivery|hotline).*$/i', '', $subject);
+                    $subject = trim($subject);
+                    // Check if it actually contains Arabic characters
+                    if (preg_match('/[\x{0600}-\x{06FF}]/u', $subject)) {
+                        $nameAr = $subject;
+                    }
+                }
+
+                // Method 2: Extract from branch URLs if mailto didn't work
+                if (empty($nameAr)) {
+                    // Branch URLs look like: /kfc/كنتاكى-فرع-اسم/fried-chicken
+                    // The Arabic slug is the second segment, URL-encoded
+                    if (preg_match('#/' . preg_quote($slug, '#') . '/([^/"]+)/#', $pageHtml, $branchMatch)) {
+                        $arSlug = urldecode($branchMatch[1]);
+                        // The Arabic slug is like كنتاكى-فرع-المكان — take the first word before the dash
+                        $parts = explode('-', $arSlug);
+                        // Collect Arabic-only parts from the start (the restaurant name part)
+                        $arParts = [];
+                        foreach ($parts as $part) {
+                            $part = trim($part);
+                            if (preg_match('/^[\x{0600}-\x{06FF}\s]+$/u', $part)) {
+                                $arParts[] = $part;
+                            } else {
+                                break; // Stop at first non-Arabic part (branch location)
+                            }
+                        }
+                        if (!empty($arParts)) {
+                            $nameAr = implode(' ', $arParts);
+                        }
+                    }
+                }
+
+                // Method 3: Extract from WhatsApp sharing link
+                if (empty($nameAr)) {
+                    if (preg_match('/whatsapp:\/\/send\?text=[^"]*?for\s+([^"]+?)\s+menu/i', $pageHtml, $waMatch)) {
+                        $waName = urldecode(trim($waMatch[1]));
+                        if (preg_match('/[\x{0600}-\x{06FF}]/u', $waName)) {
+                            $nameAr = $waName;
+                        }
+                    }
+                }
+
+                // Clean up Arabic name
+                if ($nameAr) {
+                    $nameAr = trim($nameAr);
+                    // Remove common suffixes/prefixes that aren't part of the name
+                    $nameAr = preg_replace('/\s*(منيو|قائمة|مطعم|مطاعم|فرع|رقم|هوتلاين|ديليفري)\s*$/u', '', $nameAr);
+                    $nameAr = trim($nameAr);
+                    if (mb_strlen($nameAr) < 2 || mb_strlen($nameAr) > 60) {
+                        $nameAr = null;
+                    }
+                }
+            } catch (\Exception) {
+                // No Arabic name found
+            }
+
             // Extract hotline/phone number
             $hotline = null;
             try {
@@ -456,6 +526,7 @@ class RestaurantScraper
 
             return RestaurantData::fromArray([
                 'name' => $name,
+                'name_ar' => $nameAr,
                 'slug' => $slug,
                 'logo_url' => $logoUrl,
                 'hotline' => $hotline,

@@ -18,6 +18,12 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Search / Filter restaurants
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 
+// ناكل ايه - Random restaurant picker
+Route::get('/nakl-eih', [HomeController::class, 'naklEih'])->name('nakl-eih');
+
+// Picker wheel
+Route::get('/picker-wheel', [HomeController::class, 'pickerWheel'])->name('picker-wheel');
+
 // Restaurant detail page
 Route::get('/restaurant/{slug}', [RestaurantController::class, 'show'])->name('restaurant.show');
 
