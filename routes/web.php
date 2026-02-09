@@ -99,7 +99,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/zones/{zone:id}', [AdminZoneController::class, 'destroy'])->name('admin.zones.destroy');
 
         // Settings
-        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
+        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
         Route::put('/settings', [AdminSettingsController::class, 'update'])->name('admin.settings.update');
 
         // Restaurant Menu Images Management
