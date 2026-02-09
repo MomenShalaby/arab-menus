@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminCityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminRestaurantController;
+use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminZoneController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RestaurantController;
@@ -45,6 +46,14 @@ Route::get('/api/search', [RestaurantController::class, 'liveSearch'])
 // API: Get random restaurant (ناكل ايه)
 Route::get('/api/random-restaurant', [RestaurantController::class, 'randomRestaurant'])
     ->name('api.random-restaurant');
+
+// Language toggle
+Route::get('/lang/{locale}', function (string $locale) {
+    if (in_array($locale, ['ar', 'en'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('lang.switch');
 
 // ===== Admin Routes =====
 Route::prefix('admin')->group(function () {
@@ -88,5 +97,19 @@ Route::prefix('admin')->group(function () {
         Route::get('/zones/{zone:id}/edit', [AdminZoneController::class, 'edit'])->name('admin.zones.edit');
         Route::put('/zones/{zone:id}', [AdminZoneController::class, 'update'])->name('admin.zones.update');
         Route::delete('/zones/{zone:id}', [AdminZoneController::class, 'destroy'])->name('admin.zones.destroy');
+
+        // Settings
+        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('admin.settings');
+        Route::put('/settings', [AdminSettingsController::class, 'update'])->name('admin.settings.update');
+
+        // Restaurant Menu Images Management
+        Route::post('/restaurants/{restaurant:id}/menu-images', [AdminRestaurantController::class, 'addMenuImage'])->name('admin.restaurants.menu-images.store');
+        Route::delete('/menu-images/{menuImage}', [AdminRestaurantController::class, 'deleteMenuImage'])->name('admin.restaurants.menu-images.destroy');
+        Route::post('/restaurants/{restaurant:id}/menu-images/reorder', [AdminRestaurantController::class, 'reorderMenuImages'])->name('admin.restaurants.menu-images.reorder');
+
+        // Restaurant Branches Management
+        Route::post('/restaurants/{restaurant:id}/branches', [AdminRestaurantController::class, 'addBranch'])->name('admin.restaurants.branches.store');
+        Route::put('/branches/{branch}', [AdminRestaurantController::class, 'updateBranch'])->name('admin.restaurants.branches.update');
+        Route::delete('/branches/{branch}', [AdminRestaurantController::class, 'deleteBranch'])->name('admin.restaurants.branches.destroy');
     });
 });

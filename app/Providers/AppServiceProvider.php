@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Setting;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,29 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Share locale and ads settings with all views
+        View::composer('*', function ($view) {
+            $locale = session('locale', 'ar');
+            app()->setLocale($locale);
+
+            $view->with('currentLocale', $locale);
+            $view->with('isRtl', $locale === 'ar');
+
+            // Share ads settings
+            try {
+                $view->with('adsEnabled', Setting::adsEnabled());
+                $view->with('adsHeaderCode', Setting::get('ads_header_code', ''));
+                $view->with('adsSidebarCode', Setting::get('ads_sidebar_code', ''));
+                $view->with('adsFooterCode', Setting::get('ads_footer_code', ''));
+                $view->with('adsBetweenCode', Setting::get('ads_between_restaurants_code', ''));
+            } catch (\Exception $e) {
+                // Settings table may not exist yet
+                $view->with('adsEnabled', false);
+                $view->with('adsHeaderCode', '');
+                $view->with('adsSidebarCode', '');
+                $view->with('adsFooterCode', '');
+                $view->with('adsBetweenCode', '');
+            }
+        });
     }
 }

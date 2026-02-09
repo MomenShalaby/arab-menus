@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'تصفح المطاعم - منيوهات العرب')
-@section('meta_description', 'تصفح قائمة المطاعم المتاحة وابحث حسب المدينة والمنطقة والتصنيف')
+@section('title', ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم - ناكل ايه' : 'Browse Restaurants - Nakol Eh')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'تصفح قائمة المطاعم المتاحة وابحث حسب المدينة والمنطقة والتصنيف' : 'Browse available restaurants and search by city, zone, and category')
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Filters Section -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">تصفية النتائج</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفية النتائج' : 'Filter Results' }}</h2>
             <form action="{{ route('search') }}" method="GET" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <!-- Search -->
                     <div class="lg:col-span-2 relative">
                         <input type="text" name="search" id="index-live-search"
-                            placeholder="ابحث عن مطعم..."
+                            placeholder="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم...' : 'Search for a restaurant...' }}"
                             value="{{ $filters['search'] ?? '' }}"
                             autocomplete="off"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-sm">
@@ -24,7 +24,7 @@
                     <!-- City -->
                     <select name="city_id" id="filter-city"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
-                        <option value="">جميع المدن</option>
+                        <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع المدن' : 'All Cities' }}</option>
                         @foreach($cities as $city)
                             <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>
                                 {{ $city->name_ar ?? $city->name }}
@@ -35,13 +35,13 @@
                     <!-- Zone -->
                     <select name="zone_id" id="filter-zone"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
-                        <option value="">جميع المناطق</option>
+                        <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع المناطق' : 'All Zones' }}</option>
                     </select>
 
                     <!-- Category -->
                     <select name="category_id"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
-                        <option value="">جميع الأقسام</option>
+                        <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع الأقسام' : 'All Categories' }}</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ ($filters['category_id'] ?? '') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name_ar ?? $category->name }}
@@ -53,9 +53,9 @@
                 <div class="flex items-center gap-3">
                     <button type="submit"
                         class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-8 rounded-xl transition-colors duration-200 text-sm shadow-sm">
-                        🔍 بحث
+                        🔍 {{ ($currentLocale ?? 'ar') === 'ar' ? 'بحث' : 'Search' }}
                     </button>
-                    <a href="{{ route('search') }}" class="text-gray-500 hover:text-primary-600 text-sm">إعادة تعيين</a>
+                    <a href="{{ route('search') }}" class="text-gray-500 hover:text-primary-600 text-sm">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعادة تعيين' : 'Reset' }}</a>
                 </div>
             </form>
         </div>
@@ -63,25 +63,25 @@
         <!-- Results Header -->
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">المطاعم</h1>
+                <h1 class="text-2xl font-bold text-gray-800">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}</h1>
                 <p class="text-sm text-gray-500 mt-1">
-                    {{ $restaurants->total() }} نتيجة
+                    {{ $restaurants->total() }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'نتيجة' : 'results' }}
                 </p>
             </div>
 
             <!-- Sort -->
             <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-500">ترتيب حسب:</span>
+                <span class="text-sm text-gray-500">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ترتيب حسب:' : 'Sort by:' }}</span>
                 <select onchange="window.location.href=this.value"
                     class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-primary-500">
                     <option value="{{ route('search', array_merge($filters, ['sort' => 'name'])) }}" {{ ($filters['sort'] ?? 'name') === 'name' ? 'selected' : '' }}>
-                        الاسم
+                        {{ ($currentLocale ?? 'ar') === 'ar' ? 'الاسم' : 'Name' }}
                     </option>
                     <option value="{{ route('search', array_merge($filters, ['sort' => 'views'])) }}" {{ ($filters['sort'] ?? '') === 'views' ? 'selected' : '' }}>
-                        الأكثر مشاهدة
+                        {{ ($currentLocale ?? 'ar') === 'ar' ? 'الأكثر مشاهدة' : 'Most Viewed' }}
                     </option>
                     <option value="{{ route('search', array_merge($filters, ['sort' => 'latest'])) }}" {{ ($filters['sort'] ?? '') === 'latest' ? 'selected' : '' }}>
-                        الأحدث
+                        {{ ($currentLocale ?? 'ar') === 'ar' ? 'الأحدث' : 'Latest' }}
                     </option>
                 </select>
             </div>
@@ -110,10 +110,10 @@
 
                         <!-- Info -->
                         <div class="p-3 border-t border-gray-50">
-                            <h3 class="font-bold text-gray-800 text-sm truncate text-center">{{ $restaurant->name }}</h3>
+                            <h3 class="font-bold text-gray-800 text-sm truncate text-center">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h3>
                             @if($restaurant->categories->isNotEmpty())
                                 <p class="text-xs text-gray-400 mt-1 truncate text-center">
-                                    {{ $restaurant->categories->pluck('name')->take(2)->implode(' • ') }}
+                                    {{ $restaurant->categories->pluck(($currentLocale ?? 'ar') === 'ar' ? 'name_ar' : 'name')->map(fn($v, $k) => $v ?: $restaurant->categories[$k]->name)->take(2)->implode(' • ') }}
                                 </p>
                             @endif
                             @if($restaurant->menuImages->isNotEmpty())
@@ -121,7 +121,7 @@
                                     <svg class="w-3 h-3 text-accent-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
                                     </svg>
-                                    <span class="text-xs text-gray-400">{{ $restaurant->menuImages->count() }} صور</span>
+                                    <span class="text-xs text-gray-400">{{ $restaurant->menuImages->count() }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'صور' : 'images' }}</span>
                                 </div>
                             @endif
                         </div>
@@ -140,8 +140,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-700 mb-2">لا توجد نتائج</h3>
-                <p class="text-gray-500">جرب تغيير معايير البحث أو التصفية</p>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">{{ ($currentLocale ?? 'ar') === 'ar' ? 'لا توجد نتائج' : 'No results found' }}</h3>
+                <p class="text-gray-500">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جرب تغيير معايير البحث أو التصفية' : 'Try changing your search or filter criteria' }}</p>
             </div>
         @endif
     </div>
@@ -207,7 +207,7 @@
     const filterZone = document.getElementById('filter-zone');
 
     async function loadZones(cityId, selectedZoneId = null) {
-        filterZone.innerHTML = '<option value="">جميع المناطق</option>';
+        filterZone.innerHTML = '<option value="">{{ ($currentLocale ?? "ar") === "ar" ? "جميع المناطق" : "All Zones" }}</option>';
 
         if (!cityId) return;
 

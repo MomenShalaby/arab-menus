@@ -122,36 +122,115 @@
                 </div>
             </div>
 
-            <!-- Menu Images Info -->
-            @if($restaurant->menuImages->isNotEmpty())
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-3">صور المنيو ({{ $restaurant->menuImages->count() }})</h3>
-                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                        @foreach($restaurant->menuImages as $img)
-                            <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+            <!-- Menu Images Management -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">صور المنيو ({{ $restaurant->menuImages->count() }})</h3>
+                </div>
+
+                <!-- Add New Image -->
+                <form action="{{ route('admin.restaurants.menu-images.store', $restaurant) }}" method="POST" class="flex gap-2 mb-4">
+                    @csrf
+                    <input type="text" name="image_url" placeholder="رابط الصورة (URL)" required dir="ltr"
+                        class="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition-colors whitespace-nowrap">
+                        + إضافة صورة
+                    </button>
+                </form>
+
+                @if($restaurant->menuImages->isNotEmpty())
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                        @foreach($restaurant->menuImages->sortBy('sort_order') as $img)
+                            <div class="relative group aspect-square bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
                                 <img src="{{ $img->image_url }}" alt="" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <form action="{{ route('admin.restaurants.menu-images.destroy', [$restaurant, $img]) }}" method="POST"
+                                        onsubmit="return confirm('حذف هذه الصورة؟')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white rounded-full p-2 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                                <span class="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">{{ $img->sort_order ?? 0 }}</span>
                             </div>
                         @endforeach
                     </div>
-                </div>
-            @endif
+                @else
+                    <p class="text-sm text-gray-400 text-center py-4">لا توجد صور منيو بعد</p>
+                @endif
+            </div>
 
-            <!-- Branches Info -->
-            @if($restaurant->branches->isNotEmpty())
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-3">الفروع ({{ $restaurant->branches->count() }})</h3>
+            <!-- Branches Management -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">الفروع ({{ $restaurant->branches->count() }})</h3>
+                </div>
+
+                <!-- Add New Branch -->
+                <form action="{{ route('admin.restaurants.branches.store', $restaurant) }}" method="POST" class="flex flex-wrap gap-2 mb-4">
+                    @csrf
+                    <input type="text" name="name" placeholder="اسم الفرع *" required
+                        class="flex-1 min-w-[150px] px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                    <input type="text" name="address" placeholder="العنوان"
+                        class="flex-1 min-w-[150px] px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                    <input type="text" name="phone" placeholder="الهاتف" dir="ltr"
+                        class="w-36 px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition-colors whitespace-nowrap">
+                        + إضافة فرع
+                    </button>
+                </form>
+
+                @if($restaurant->branches->isNotEmpty())
                     <div class="space-y-2">
                         @foreach($restaurant->branches as $branch)
-                            <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-3 text-sm">
-                                <span class="font-semibold text-gray-800">{{ $branch->name }}</span>
-                                @if($branch->address)
-                                    <span class="text-gray-400">- {{ $branch->address }}</span>
-                                @endif
+                            <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-3 text-sm" id="branch-{{ $branch->id }}">
+                                <!-- Display Mode -->
+                                <div class="flex-1 flex items-center gap-3 branch-display">
+                                    <span class="font-semibold text-gray-800">{{ $branch->name }}</span>
+                                    @if($branch->address)
+                                        <span class="text-gray-400">- {{ $branch->address }}</span>
+                                    @endif
+                                    @if($branch->phone)
+                                        <span class="text-gray-400 dir-ltr">📞 {{ $branch->phone }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1 branch-display">
+                                    <button type="button" onclick="editBranch({{ $branch->id }})" class="text-blue-600 hover:text-blue-800 p-1" title="تعديل">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </button>
+                                    <form action="{{ route('admin.restaurants.branches.destroy', [$restaurant, $branch]) }}" method="POST"
+                                        onsubmit="return confirm('حذف هذا الفرع؟')" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:text-red-700 p-1" title="حذف">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Edit Mode (hidden by default) -->
+                                <form action="{{ route('admin.restaurants.branches.update', [$restaurant, $branch]) }}" method="POST"
+                                    class="hidden flex-1 flex flex-wrap items-center gap-2 branch-edit">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="text" name="name" value="{{ $branch->name }}" required
+                                        class="flex-1 min-w-[120px] px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                                    <input type="text" name="address" value="{{ $branch->address }}" placeholder="العنوان"
+                                        class="flex-1 min-w-[120px] px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                                    <input type="text" name="phone" value="{{ $branch->phone }}" placeholder="الهاتف" dir="ltr"
+                                        class="w-32 px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-primary-500 outline-none">
+                                    <button type="submit" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700">حفظ</button>
+                                    <button type="button" onclick="cancelEditBranch({{ $branch->id }})" class="text-gray-500 text-xs px-3 py-1.5 rounded-lg hover:bg-gray-200">إلغاء</button>
+                                </form>
                             </div>
                         @endforeach
                     </div>
-                </div>
-            @endif
+                @else
+                    <p class="text-sm text-gray-400 text-center py-4">لا توجد فروع بعد</p>
+                @endif
+            </div>
 
             <div class="flex items-center gap-3">
                 <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-8 rounded-xl transition-colors text-sm">
@@ -162,3 +241,19 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    function editBranch(id) {
+        const row = document.getElementById('branch-' + id);
+        row.querySelectorAll('.branch-display').forEach(el => el.classList.add('hidden'));
+        row.querySelector('.branch-edit').classList.remove('hidden');
+    }
+
+    function cancelEditBranch(id) {
+        const row = document.getElementById('branch-' + id);
+        row.querySelectorAll('.branch-display').forEach(el => el.classList.remove('hidden'));
+        row.querySelector('.branch-edit').classList.add('hidden');
+    }
+</script>
+@endpush

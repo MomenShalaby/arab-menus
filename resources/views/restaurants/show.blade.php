@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', $restaurant->name . ' - منيوهات العرب')
-@section('meta_description', 'منيو ' . $restaurant->name . ' - اطلع على قائمة الطعام والأرقام والفروع')
+@section('title', (($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name) . ' - ناكل ايه')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' - اطلع على قائمة الطعام والأرقام والفروع' : $restaurant->name . ' menu - View food menu, contact info and branches')
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Breadcrumb -->
         <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-            <a href="{{ route('home') }}" class="hover:text-primary-600">الرئيسية</a>
+            <a href="{{ route('home') }}" class="hover:text-primary-600">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}</a>
             <span>/</span>
-            <a href="{{ route('search') }}" class="hover:text-primary-600">المطاعم</a>
+            <a href="{{ route('search') }}" class="hover:text-primary-600">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}</a>
             <span>/</span>
-            <span class="text-gray-800 font-medium">{{ $restaurant->name }}</span>
+            <span class="text-gray-800 font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</span>
         </nav>
 
         <!-- Restaurant Header -->
@@ -32,14 +32,14 @@
 
                 <!-- Info -->
                 <div class="flex-1">
-                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2">{{ $restaurant->name }}</h1>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h1>
 
                     <!-- Categories -->
                     @if($restaurant->categories->isNotEmpty())
                         <div class="flex flex-wrap gap-2 mb-4">
                             @foreach($restaurant->categories as $category)
                                 <span class="inline-block bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">
-                                    {{ $category->name }}
+                                    {{ ($currentLocale ?? 'ar') === 'ar' ? ($category->name_ar ?? $category->name) : $category->name }}
                                 </span>
                             @endforeach
                         </div>
@@ -65,7 +65,7 @@
                                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                {{ $restaurant->cities->pluck('name')->implode(' • ') }}
+                                {{ $restaurant->cities->pluck(($currentLocale ?? 'ar') === 'ar' ? 'name_ar' : 'name')->map(fn($v, $k) => $v ?: $restaurant->cities[$k]->name)->implode(' • ') }}
                             </div>
                         @endif
 
@@ -75,7 +75,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                {{ $restaurant->menuImages->count() }} صورة للمنيو
+                                {{ $restaurant->menuImages->count() }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'صورة للمنيو' : 'menu images' }}
                             </div>
                         @endif
 
@@ -101,7 +101,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    المنيو
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'المنيو' : 'Menu' }}
                 </h2>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -128,7 +128,7 @@
 
                             <!-- Image label -->
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-3">
-                                <span class="text-white text-sm font-medium">صفحة {{ $index + 1 }}</span>
+                                <span class="text-white text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'صفحة' : 'Page' }} {{ $index + 1 }}</span>
                             </div>
                         </div>
                     @endforeach
@@ -140,8 +140,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <h3 class="text-lg font-bold text-gray-500 mb-1">لا توجد صور للمنيو</h3>
-                <p class="text-sm text-gray-400">لم يتم تحميل صور المنيو لهذا المطعم بعد</p>
+                <h3 class="text-lg font-bold text-gray-500 mb-1">{{ ($currentLocale ?? 'ar') === 'ar' ? 'لا توجد صور للمنيو' : 'No menu images' }}</h3>
+                <p class="text-sm text-gray-400">{{ ($currentLocale ?? 'ar') === 'ar' ? 'لم يتم تحميل صور المنيو لهذا المطعم بعد' : 'Menu images have not been uploaded yet for this restaurant' }}</p>
             </div>
         @endif
 
@@ -154,7 +154,7 @@
                             d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    الفروع ({{ $restaurant->branches->count() }})
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'الفروع' : 'Branches' }} ({{ $restaurant->branches->count() }})
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     @foreach($restaurant->branches as $branch)
@@ -177,7 +177,7 @@
         <!-- Similar Restaurants -->
         @if($similar->isNotEmpty())
             <div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">مطاعم مشابهة</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ ($currentLocale ?? 'ar') === 'ar' ? 'مطاعم مشابهة' : 'Similar Restaurants' }}</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     @foreach($similar as $sim)
                         @if($sim->slug)
@@ -196,7 +196,7 @@
                                 @endif
                             </div>
                             <div class="p-3 text-center border-t border-gray-50">
-                                <h3 class="font-bold text-gray-800 text-sm truncate">{{ $sim->name }}</h3>
+                                <h3 class="font-bold text-gray-800 text-sm truncate">{{ ($currentLocale ?? 'ar') === 'ar' ? ($sim->name_ar ?? $sim->name) : $sim->name }}</h3>
                             </div>
                         </a>
                         @endif
