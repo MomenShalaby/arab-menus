@@ -17,6 +17,8 @@ class AdminSettingsController extends Controller
         $settings = [
             'ads_enabled' => Setting::get('ads_enabled', '0'),
             'ads_header_code' => Setting::get('ads_header_code', ''),
+            'ads_restaurant_header_code' => Setting::get('ads_restaurant_header_code', ''),
+            'ads_after_menu_code' => Setting::get('ads_after_menu_code', ''),
             'ads_sidebar_code' => Setting::get('ads_sidebar_code', ''),
             'ads_footer_code' => Setting::get('ads_footer_code', ''),
             'ads_between_restaurants_code' => Setting::get('ads_between_restaurants_code', ''),
@@ -30,6 +32,8 @@ class AdminSettingsController extends Controller
         $data = $request->validate([
             'ads_enabled' => 'nullable|in:0,1',
             'ads_header_code' => 'nullable|string|max:5000',
+            'ads_restaurant_header_code' => 'nullable|string|max:5000',
+            'ads_after_menu_code' => 'nullable|string|max:5000',
             'ads_sidebar_code' => 'nullable|string|max:5000',
             'ads_footer_code' => 'nullable|string|max:5000',
             'ads_between_restaurants_code' => 'nullable|string|max:5000',
@@ -37,6 +41,8 @@ class AdminSettingsController extends Controller
 
         Setting::set('ads_enabled', $data['ads_enabled'] ?? '0');
         Setting::set('ads_header_code', $data['ads_header_code'] ?? '');
+        Setting::set('ads_restaurant_header_code', $data['ads_restaurant_header_code'] ?? '');
+        Setting::set('ads_after_menu_code', $data['ads_after_menu_code'] ?? '');
         Setting::set('ads_sidebar_code', $data['ads_sidebar_code'] ?? '');
         Setting::set('ads_footer_code', $data['ads_footer_code'] ?? '');
         Setting::set('ads_between_restaurants_code', $data['ads_between_restaurants_code'] ?? '');

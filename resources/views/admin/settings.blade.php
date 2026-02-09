@@ -38,7 +38,25 @@
                 <textarea name="ads_header_code" rows="4" dir="ltr"
                     class="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none font-mono"
                     placeholder="أدخل كود الإعلان (HTML/JS) هنا...">{{ $settings['ads_header_code'] }}</textarea>
-                <p class="text-xs text-gray-400 mt-1">يظهر أسفل شريط التنقل في جميع الصفحات</p>
+                <p class="text-xs text-gray-400 mt-1">يظهر أسفل شريط التنقل في جميع الصفحات (728x90 أو Responsive)</p>
+            </div>
+
+            <!-- Restaurant Header Ad -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">كود إعلان أسفل معلومات المطعم</label>
+                <textarea name="ads_restaurant_header_code" rows="4" dir="ltr"
+                    class="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none font-mono"
+                    placeholder="أدخل كود الإعلان (HTML/JS) هنا...">{{ $settings['ads_restaurant_header_code'] }}</textarea>
+                <p class="text-xs text-gray-400 mt-1">يظهر في صفحة المطعم أسفل معلومات المطعم مباشرة (Responsive أو 728x90)</p>
+            </div>
+
+            <!-- After Menu Images Ad -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">كود إعلان بعد صور المنيو</label>
+                <textarea name="ads_after_menu_code" rows="4" dir="ltr"
+                    class="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-primary-500 outline-none font-mono"
+                    placeholder="أدخل كود الإعلان (HTML/JS) هنا...">{{ $settings['ads_after_menu_code'] }}</textarea>
+                <p class="text-xs text-gray-400 mt-1">يظهر في صفحة المطعم بعد صور المنيو (Responsive أو 336x280)</p>
             </div>
 
             <!-- Between Restaurants -->

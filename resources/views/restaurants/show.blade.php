@@ -15,7 +15,7 @@
         </nav>
 
         <!-- Restaurant Header -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
             <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6">
                 <!-- Logo -->
                 <div class="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100">
@@ -45,19 +45,30 @@
                         </div>
                     @endif
 
-                    <!-- Details Row -->
-                    <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                        @if($restaurant->hotline)
-                            <a href="tel:{{ $restaurant->hotline }}"
-                                class="flex items-center gap-1.5 text-green-600 hover:text-green-700 font-semibold bg-green-50 px-3 py-1.5 rounded-full">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                                {{ $restaurant->hotline }}
-                            </a>
+                    <!-- Phone Numbers (each individually clickable) -->
+                    @if($restaurant->hotline)
+                        @php
+                            $phones = preg_split('/[\s]*[\-\/,،]+[\s]*/', trim($restaurant->hotline));
+                            $phones = array_values(array_filter(array_map('trim', $phones), fn($p) => preg_match('/\d{4,}/', $p)));
+                        @endphp
+                        @if(count($phones) > 0)
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                @foreach($phones as $phone)
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}"
+                                        class="inline-flex items-center gap-1.5 text-green-600 hover:text-green-700 font-semibold bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-full transition-colors text-sm" dir="ltr">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                        {{ $phone }}
+                                    </a>
+                                @endforeach
+                            </div>
                         @endif
+                    @endif
 
+                    <!-- Details Row -->
+                    <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                         @if($restaurant->cities->isNotEmpty())
                             <div class="flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,6 +103,16 @@
                 </div>
             </div>
         </div>
+
+        <!-- Ad: Under Restaurant Header (native-looking, labeled) -->
+        @if(($adsEnabled ?? false) && !empty($adsRestaurantHeaderCode ?? ''))
+            <div class="mb-8 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
+                <div class="text-[10px] text-gray-300 uppercase tracking-wider mb-0.5">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعلان' : 'Ad' }}</div>
+                {!! $adsRestaurantHeaderCode !!}
+            </div>
+        @else
+            <div class="mb-4"></div>
+        @endif
 
         <!-- Menu Images Gallery -->
         @if($restaurant->menuImages->isNotEmpty())
@@ -145,6 +166,14 @@
             </div>
         @endif
 
+        <!-- Ad: After Menu Images -->
+        @if(($adsEnabled ?? false) && !empty($adsAfterMenuCode ?? ''))
+            <div class="mb-8 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
+                <div class="text-[10px] text-gray-300 uppercase tracking-wider mb-0.5">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعلان' : 'Ad' }}</div>
+                {!! $adsAfterMenuCode !!}
+            </div>
+        @endif
+
         <!-- Branches Section -->
         @if($restaurant->branches && $restaurant->branches->isNotEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 p-6 sm:p-8">
@@ -174,36 +203,50 @@
             </div>
         @endif
 
-        <!-- Similar Restaurants -->
-        @if($similar->isNotEmpty())
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ ($currentLocale ?? 'ar') === 'ar' ? 'مطاعم مشابهة' : 'Similar Restaurants' }}</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    @foreach($similar as $sim)
-                        @if($sim->slug)
-                        <a href="{{ route('restaurant.show', $sim->slug) }}"
-                            class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
-                            <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
-                                @if($sim->logo_url)
-                                    <img data-src="{{ $sim->logo_url }}"
-                                        alt="{{ $sim->name }}"
-                                        class="lazy-image w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                                        loading="lazy">
-                                @else
-                                    <div class="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center">
-                                        <span class="text-xl font-bold text-primary-600">{{ mb_substr($sim->name, 0, 1) }}</span>
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="p-3 text-center border-t border-gray-50">
-                                <h3 class="font-bold text-gray-800 text-sm truncate">{{ ($currentLocale ?? 'ar') === 'ar' ? ($sim->name_ar ?? $sim->name) : $sim->name }}</h3>
-                            </div>
-                        </a>
-                        @endif
-                    @endforeach
+        <!-- Similar Restaurants + Sidebar Ad -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            @if($similar->isNotEmpty())
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ ($currentLocale ?? 'ar') === 'ar' ? 'مطاعم مشابهة' : 'Similar Restaurants' }}</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        @foreach($similar as $sim)
+                            @if($sim->slug)
+                            <a href="{{ route('restaurant.show', $sim->slug) }}"
+                                class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
+                                <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+                                    @if($sim->logo_url)
+                                        <img data-src="{{ $sim->logo_url }}"
+                                            alt="{{ $sim->name }}"
+                                            class="lazy-image w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                                            loading="lazy">
+                                    @else
+                                        <div class="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center">
+                                            <span class="text-xl font-bold text-primary-600">{{ mb_substr($sim->name, 0, 1) }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="p-3 text-center border-t border-gray-50">
+                                    <h3 class="font-bold text-gray-800 text-sm truncate">{{ ($currentLocale ?? 'ar') === 'ar' ? ($sim->name_ar ?? $sim->name) : $sim->name }}</h3>
+                                </div>
+                            </a>
+                            @endif
+                        @endforeach
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
+
+            <!-- Sidebar Ad (sticky on desktop) -->
+            @if(($adsEnabled ?? false) && !empty($adsSidebarCode ?? ''))
+                <div class="lg:w-72 flex-shrink-0">
+                    <div class="lg:sticky lg:top-24">
+                        <div class="rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 text-center">
+                            <div class="text-[10px] text-gray-300 uppercase tracking-wider mb-0.5">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعلان' : 'Ad' }}</div>
+                            {!! $adsSidebarCode !!}
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 @endsection
 

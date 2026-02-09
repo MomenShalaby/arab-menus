@@ -33,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
             try {
                 $view->with('adsEnabled', Setting::adsEnabled());
                 $view->with('adsHeaderCode', Setting::get('ads_header_code', ''));
+                $view->with('adsRestaurantHeaderCode', Setting::get('ads_restaurant_header_code', ''));
+                $view->with('adsAfterMenuCode', Setting::get('ads_after_menu_code', ''));
                 $view->with('adsSidebarCode', Setting::get('ads_sidebar_code', ''));
                 $view->with('adsFooterCode', Setting::get('ads_footer_code', ''));
                 $view->with('adsBetweenCode', Setting::get('ads_between_restaurants_code', ''));
@@ -40,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
                 // Settings table may not exist yet
                 $view->with('adsEnabled', false);
                 $view->with('adsHeaderCode', '');
+                $view->with('adsRestaurantHeaderCode', '');
+                $view->with('adsAfterMenuCode', '');
                 $view->with('adsSidebarCode', '');
                 $view->with('adsFooterCode', '');
                 $view->with('adsBetweenCode', '');

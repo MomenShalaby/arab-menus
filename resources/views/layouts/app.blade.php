@@ -136,6 +136,8 @@
     </style>
 
     @stack('styles')
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1389148167793942"
+     crossorigin="anonymous"></script>
 </head>
 <body class="bg-gray-50 {{ ($currentLocale ?? 'ar') === 'ar' ? 'font-arabic' : 'font-english' }} text-gray-800 min-h-screen flex flex-col">
     <!-- Navigation -->
@@ -171,6 +173,7 @@
                     <a href="{{ route('home') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}</a>
                     <a href="{{ route('search') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم' : 'Browse' }}</a>
                     <a href="{{ route('nakl-eih') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟' : 'Nakol Eh?' }}</a>
+                    <a href="{{ route('picker-wheel') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? '🎡 العجلة' : '🎡 Wheel' }}</a>
 
                     <!-- Language Toggle -->
                     @if(($currentLocale ?? 'ar') === 'ar')
@@ -227,6 +230,7 @@
                         <li><a href="{{ route('home') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الصفحة الرئيسية' : 'Home' }}</a></li>
                         <li><a href="{{ route('search') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم' : 'Browse Restaurants' }}</a></li>
                         <li><a href="{{ route('nakl-eih') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟' : 'Nakol Eh?' }}</a></li>
+                        <li><a href="{{ route('picker-wheel') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'عجلة الاختيار' : 'Picker Wheel' }}</a></li>
                     </ul>
                 </div>
 
