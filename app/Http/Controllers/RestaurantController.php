@@ -26,6 +26,9 @@ class RestaurantController extends Controller
             abort(404);
         }
 
+        // Increment view count
+        $restaurant->increment('total_views');
+
         $similar = $this->restaurantService->getSimilarRestaurants($restaurant);
 
         return view('restaurants.show', [

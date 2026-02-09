@@ -245,12 +245,18 @@ class RestaurantScraper
 
             $data = $this->extractRestaurantDetail($crawler, $slug);
 
+            // Free crawler memory immediately
+            unset($crawler);
+
             if ($data !== null) {
                 $this->persistRestaurantDetail($data);
                 $log->markCompleted(1);
             } else {
                 $log->markFailed("No data extracted for: {$slug}");
             }
+
+            // Free memory
+            gc_collect_cycles();
 
             return $data;
         } catch (\Exception $e) {
@@ -373,14 +379,21 @@ class RestaurantScraper
                 // No Arabic name found
             }
 
-            // Extract hotline/phone number
+            // Extract hotline/phone number - get ALL phone numbers
             $hotline = null;
             try {
                 $telLinks = $crawler->filter('a[href^="tel:"]');
                 if ($telLinks->count() > 0) {
-                    $hotline = trim($telLinks->first()->text(''));
-                    // Clean up
-                    $hotline = preg_replace('/[^0-9+]/', '', $hotline);
+                    $phones = [];
+                    $telLinks->each(function (Crawler $telLink) use (&$phones): void {
+                        $phone = trim($telLink->text(''));
+                        $phone = preg_replace('/[^0-9+\-\s]/', '', $phone);
+                        $phone = trim($phone);
+                        if (!empty($phone) && !in_array($phone, $phones)) {
+                            $phones[] = $phone;
+                        }
+                    });
+                    $hotline = !empty($phones) ? implode(' - ', $phones) : null;
                 }
             } catch (\Exception) {
                 // No hotline found

@@ -254,6 +254,7 @@
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach($featured as $restaurant)
+                @if($restaurant->slug)
                 <a href="{{ route('restaurant.show', $restaurant->slug) }}"
                     class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
                     <!-- Logo -->
@@ -280,6 +281,7 @@
                         @endif
                     </div>
                 </a>
+                @endif
             @endforeach
         </div>
     </section>

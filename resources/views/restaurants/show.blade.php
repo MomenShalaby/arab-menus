@@ -180,6 +180,7 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">مطاعم مشابهة</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     @foreach($similar as $sim)
+                        @if($sim->slug)
                         <a href="{{ route('restaurant.show', $sim->slug) }}"
                             class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
                             <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
@@ -198,6 +199,7 @@
                                 <h3 class="font-bold text-gray-800 text-sm truncate">{{ $sim->name }}</h3>
                             </div>
                         </a>
+                        @endif
                     @endforeach
                 </div>
             </div>

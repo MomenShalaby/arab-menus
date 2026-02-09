@@ -145,11 +145,12 @@
                 </a>
 
                 <!-- Quick Search (Desktop) -->
-                <div class="hidden md:block flex-1 max-w-md mx-8">
+                <div class="hidden md:block flex-1 max-w-md mx-8 relative">
                     <form action="{{ route('search') }}" method="GET" class="relative">
-                        <input type="text" name="search"
+                        <input type="text" name="search" id="nav-live-search"
                             placeholder="ابحث عن مطعم..."
                             value="{{ request('search') }}"
+                            autocomplete="off"
                             class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-sm">
                         <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,6 +158,8 @@
                             </svg>
                         </button>
                     </form>
+                    <!-- Nav Autocomplete Dropdown -->
+                    <div id="nav-search-results" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 hidden max-h-80 overflow-y-auto"></div>
                 </div>
 
                 <!-- Navigation Links -->
@@ -247,6 +250,60 @@
     </div>
 
     <script>
+        // ====== NAV LIVE SEARCH ======
+        (function() {
+            const navSearchInput = document.getElementById('nav-live-search');
+            const navSearchResults = document.getElementById('nav-search-results');
+            let navSearchTimer = null;
+
+            if (navSearchInput && navSearchResults) {
+                navSearchInput.addEventListener('input', () => {
+                    clearTimeout(navSearchTimer);
+                    const q = navSearchInput.value.trim();
+                    if (q.length < 2) {
+                        navSearchResults.classList.add('hidden');
+                        navSearchResults.innerHTML = '';
+                        return;
+                    }
+                    navSearchTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                            const data = await res.json();
+                            if (data.length === 0) {
+                                navSearchResults.innerHTML = '<div class="p-4 text-center text-gray-400 text-sm">لا توجد نتائج</div>';
+                                navSearchResults.classList.remove('hidden');
+                                return;
+                            }
+                            navSearchResults.innerHTML = data.map(r => `
+                                <a href="${r.url}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0">
+                                    <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                        ${r.logo_url ? `<img src="${r.logo_url}" alt="${r.name}" class="w-full h-full object-contain">` : `<span class="text-xs font-bold text-primary-600">${r.name.charAt(0)}</span>`}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-gray-800 text-sm truncate">${r.name}</div>
+                                        <div class="text-xs text-gray-400 truncate">${r.categories.map(c => c.name_ar || c.name).join(' • ')}</div>
+                                    </div>
+                                </a>
+                            `).join('');
+                            navSearchResults.classList.remove('hidden');
+                        } catch (e) {
+                            console.error('Nav search failed:', e);
+                        }
+                    }, 300);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!navSearchInput.contains(e.target) && !navSearchResults.contains(e.target)) {
+                        navSearchResults.classList.add('hidden');
+                    }
+                });
+
+                navSearchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') navSearchResults.classList.add('hidden');
+                });
+            }
+        })();
+
         // Lightbox functionality
         let lightboxImages = [];
         let currentImageIndex = 0;

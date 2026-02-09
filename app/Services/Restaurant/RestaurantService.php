@@ -85,7 +85,9 @@ class RestaurantService
     public function searchRestaurants(array $filters = [], int $perPage = self::PER_PAGE): LengthAwarePaginator
     {
         $query = Restaurant::with(['categories', 'menuImages'])
-            ->whereNotNull('last_scraped_at');
+            ->whereNotNull('last_scraped_at')
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '');
 
         // Search by name
         if (! empty($filters['search'])) {
@@ -154,12 +156,16 @@ class RestaurantService
 
         if ($categoryIds->isEmpty()) {
             return Restaurant::where('id', '!=', $restaurant->id)
+                ->whereNotNull('slug')
+                ->where('slug', '!=', '')
                 ->inRandomOrder()
                 ->limit($limit)
                 ->get();
         }
 
         return Restaurant::where('id', '!=', $restaurant->id)
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '')
             ->whereHas('categories', function (Builder $q) use ($categoryIds): void {
                 $q->whereIn('categories.id', $categoryIds);
             })
@@ -181,6 +187,8 @@ class RestaurantService
             self::CACHE_TTL_MINUTES * 60,
             fn(): Collection => Restaurant::with(['categories', 'menuImages'])
                 ->whereNotNull('last_scraped_at')
+                ->whereNotNull('slug')
+                ->where('slug', '!=', '')
                 ->whereHas('menuImages')
                 ->orderByDesc('total_views')
                 ->limit($limit)

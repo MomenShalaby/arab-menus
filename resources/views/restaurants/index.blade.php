@@ -11,11 +11,14 @@
             <form action="{{ route('search') }}" method="GET" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <!-- Search -->
-                    <div class="lg:col-span-2">
-                        <input type="text" name="search"
+                    <div class="lg:col-span-2 relative">
+                        <input type="text" name="search" id="index-live-search"
                             placeholder="ابحث عن مطعم..."
                             value="{{ $filters['search'] ?? '' }}"
+                            autocomplete="off"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-sm">
+                        <!-- Autocomplete Dropdown -->
+                        <div id="index-search-results" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 hidden max-h-80 overflow-y-auto"></div>
                     </div>
 
                     <!-- City -->
@@ -88,6 +91,7 @@
         @if($restaurants->isNotEmpty())
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 @foreach($restaurants as $restaurant)
+                    @if($restaurant->slug)
                     <a href="{{ route('restaurant.show', $restaurant->slug) }}"
                         class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
                         <!-- Logo -->
@@ -121,8 +125,7 @@
                                 </div>
                             @endif
                         </div>
-                    </a>
-                @endforeach
+                    </a>                    @endif                @endforeach
             </div>
 
             <!-- Pagination -->
@@ -146,6 +149,59 @@
 
 @push('scripts')
 <script>
+    // ====== LIVE SEARCH ON INDEX PAGE ======
+    const indexSearchInput = document.getElementById('index-live-search');
+    const indexSearchResults = document.getElementById('index-search-results');
+    let indexSearchTimer = null;
+
+    if (indexSearchInput && indexSearchResults) {
+        indexSearchInput.addEventListener('input', () => {
+            clearTimeout(indexSearchTimer);
+            const q = indexSearchInput.value.trim();
+            if (q.length < 2) {
+                indexSearchResults.classList.add('hidden');
+                indexSearchResults.innerHTML = '';
+                return;
+            }
+            indexSearchTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (data.length === 0) {
+                        indexSearchResults.innerHTML = '<div class="p-4 text-center text-gray-400 text-sm">لا توجد نتائج</div>';
+                        indexSearchResults.classList.remove('hidden');
+                        return;
+                    }
+                    indexSearchResults.innerHTML = data.map(r => `
+                        <a href="${r.url}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0">
+                            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                ${r.logo_url ? `<img src="${r.logo_url}" alt="${r.name}" class="w-full h-full object-contain">` : `<span class="text-sm font-bold text-primary-600">${r.name.charAt(0)}</span>`}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-gray-800 text-sm truncate">${r.name}</div>
+                                <div class="text-xs text-gray-400 truncate">${r.categories.map(c => c.name_ar || c.name).join(' • ')}</div>
+                            </div>
+                            ${r.hotline ? `<span class="text-xs text-green-600 font-medium hidden sm:block">📞 ${r.hotline}</span>` : ''}
+                        </a>
+                    `).join('');
+                    indexSearchResults.classList.remove('hidden');
+                } catch (e) {
+                    console.error('Search failed:', e);
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!indexSearchInput.contains(e.target) && !indexSearchResults.contains(e.target)) {
+                indexSearchResults.classList.add('hidden');
+            }
+        });
+
+        indexSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') indexSearchResults.classList.add('hidden');
+        });
+    }
+
     // Dynamic zone loading
     const filterCity = document.getElementById('filter-city');
     const filterZone = document.getElementById('filter-zone');

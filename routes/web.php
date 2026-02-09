@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminCityController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminRestaurantController;
+use App\Http\Controllers\Admin\AdminZoneController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RestaurantController;
 use Illuminate\Support\Facades\Route;
@@ -39,3 +45,48 @@ Route::get('/api/search', [RestaurantController::class, 'liveSearch'])
 // API: Get random restaurant (ناكل ايه)
 Route::get('/api/random-restaurant', [RestaurantController::class, 'randomRestaurant'])
     ->name('api.random-restaurant');
+
+// ===== Admin Routes =====
+Route::prefix('admin')->group(function () {
+    // Auth routes (no middleware)
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+    // Protected admin routes
+    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+        // Restaurants CRUD (bind by ID since slug can be null)
+        Route::get('/restaurants', [AdminRestaurantController::class, 'index'])->name('admin.restaurants.index');
+        Route::get('/restaurants/create', [AdminRestaurantController::class, 'create'])->name('admin.restaurants.create');
+        Route::post('/restaurants', [AdminRestaurantController::class, 'store'])->name('admin.restaurants.store');
+        Route::get('/restaurants/{restaurant:id}/edit', [AdminRestaurantController::class, 'edit'])->name('admin.restaurants.edit');
+        Route::put('/restaurants/{restaurant:id}', [AdminRestaurantController::class, 'update'])->name('admin.restaurants.update');
+        Route::delete('/restaurants/{restaurant:id}', [AdminRestaurantController::class, 'destroy'])->name('admin.restaurants.destroy');
+
+        // Cities CRUD
+        Route::get('/cities', [AdminCityController::class, 'index'])->name('admin.cities.index');
+        Route::get('/cities/create', [AdminCityController::class, 'create'])->name('admin.cities.create');
+        Route::post('/cities', [AdminCityController::class, 'store'])->name('admin.cities.store');
+        Route::get('/cities/{city:id}/edit', [AdminCityController::class, 'edit'])->name('admin.cities.edit');
+        Route::put('/cities/{city:id}', [AdminCityController::class, 'update'])->name('admin.cities.update');
+        Route::delete('/cities/{city:id}', [AdminCityController::class, 'destroy'])->name('admin.cities.destroy');
+
+        // Categories CRUD
+        Route::get('/categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
+        Route::get('/categories/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+        Route::post('/categories', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+        Route::get('/categories/{category:id}/edit', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+        Route::put('/categories/{category:id}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+        Route::delete('/categories/{category:id}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
+
+        // Zones CRUD
+        Route::get('/zones', [AdminZoneController::class, 'index'])->name('admin.zones.index');
+        Route::get('/zones/create', [AdminZoneController::class, 'create'])->name('admin.zones.create');
+        Route::post('/zones', [AdminZoneController::class, 'store'])->name('admin.zones.store');
+        Route::get('/zones/{zone:id}/edit', [AdminZoneController::class, 'edit'])->name('admin.zones.edit');
+        Route::put('/zones/{zone:id}', [AdminZoneController::class, 'update'])->name('admin.zones.update');
+        Route::delete('/zones/{zone:id}', [AdminZoneController::class, 'destroy'])->name('admin.zones.destroy');
+    });
+});

@@ -40,26 +40,36 @@ class ScrapeDetailsCommand extends Command
             $query->whereNull('last_scraped_at');
         }
 
-        $restaurants = $query->get();
+        $total = $query->count();
 
-        if ($restaurants->isEmpty()) {
+        if ($total === 0) {
             $this->info('No restaurants to scrape.');
             return self::SUCCESS;
         }
 
-        $this->info("🍽️  Scraping details for {$restaurants->count()} restaurants...");
-        $bar = $this->output->createProgressBar($restaurants->count());
+        $this->info("🍽️  Scraping details for {$total} restaurants...");
+        $bar = $this->output->createProgressBar($total);
         $bar->start();
 
-        foreach ($restaurants as $restaurant) {
-            if ($sync) {
-                dispatch_sync(new ScrapeRestaurantDetailJob($restaurant->slug));
-            } else {
-                ScrapeRestaurantDetailJob::dispatch($restaurant->slug)
-                    ->onQueue('scraper');
+        // Use chunk to avoid loading all restaurants into memory at once
+        $query->select(['id', 'slug'])->chunk(50, function ($restaurants) use ($sync, $bar) {
+            foreach ($restaurants as $restaurant) {
+                if ($sync) {
+                    try {
+                        dispatch_sync(new ScrapeRestaurantDetailJob($restaurant->slug));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error("Failed to scrape {$restaurant->slug}: {$e->getMessage()}");
+                    }
+                } else {
+                    ScrapeRestaurantDetailJob::dispatch($restaurant->slug)
+                        ->onQueue('scraper');
+                }
+                $bar->advance();
             }
-            $bar->advance();
-        }
+
+            // Free memory between chunks
+            gc_collect_cycles();
+        });
 
         $bar->finish();
         $this->newLine(2);
