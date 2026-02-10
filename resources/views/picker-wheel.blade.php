@@ -30,13 +30,14 @@
             <!-- Wheel Container -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8">
                 <div class="relative flex flex-col items-center">
-                    <!-- Pointer -->
-                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10">
-                        <div class="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-b-[25px] border-b-red-500 drop-shadow-lg"></div>
-                    </div>
-
                     <!-- Canvas -->
                     <canvas id="wheel-canvas" width="340" height="340" class="drop-shadow-2xl max-w-full h-auto"></canvas>
+
+                    <!-- Pointer -->
+<div class="mt-[-12px] mb-4 flex justify-center">
+    <div class="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-b-[25px] border-b-red-500 drop-shadow-lg"></div>
+</div>
+
 
                     <!-- Spin Button -->
                     <button id="spin-btn"
