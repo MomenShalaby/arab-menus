@@ -31,8 +31,8 @@
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8">
                 <div class="relative flex flex-col items-center">
                     <!-- Pointer -->
-                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 z-10">
-                        <div class="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[25px] border-t-red-500 drop-shadow-lg"></div>
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10">
+                        <div class="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-b-[25px] border-b-red-500 drop-shadow-lg"></div>
                     </div>
 
                     <!-- Canvas -->
