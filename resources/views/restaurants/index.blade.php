@@ -1,17 +1,72 @@
 @extends('layouts.app')
 
-@section('title', ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم - ناكل ايه' : 'Browse Restaurants - Nakol Eh')
-@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'تصفح قائمة المطاعم المتاحة وابحث حسب المدينة والمنطقة والتصنيف' : 'Browse available restaurants and search by city, zone, and category')
+@php
+    $pageTitle = ($currentLocale ?? 'ar') === 'ar' ? 'تصفح منيوهات المطاعم' : 'Browse Restaurant Menus';
+    if (!empty($filters['search'])) {
+        $pageTitle = ($currentLocale ?? 'ar') === 'ar' ? 'نتائج البحث عن: ' . $filters['search'] : 'Search results for: ' . $filters['search'];
+    }
+@endphp
+
+@section('title', $pageTitle . ' - ناكل ايه | Nakol Eh')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'تصفح منيوهات المطاعم في مصر. ابحث حسب المدينة والمنطقة والتصنيف. أكثر من ' . $restaurants->total() . ' مطعم متاح.' : 'Browse restaurant menus in Egypt. Search by city, zone, and category. Over ' . $restaurants->total() . ' restaurants available.')
+@section('meta_keywords', 'تصفح مطاعم, منيوهات مطاعم مصر, browse restaurants Egypt, restaurant menus, قوائم طعام')
+
+@push('structured_data')
+<!-- Structured Data: ItemList for restaurant listing -->
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "ItemList",
+    "name": "{{ $pageTitle }}",
+    "description": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'قائمة منيوهات المطاعم في مصر' : 'Restaurant menus list in Egypt' }}",
+    "numberOfItems": {{ $restaurants->total() }},
+    "itemListElement": [
+        @foreach($restaurants->take(10) as $index => $restaurant)
+        @if($restaurant->slug)
+        {
+            "@@type": "ListItem",
+            "position": {{ $index + 1 }},
+            "url": "{{ route('restaurant.show', $restaurant->slug) }}",
+            "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}"
+        }{{ !$loop->last ? ',' : '' }}
+        @endif
+        @endforeach
+    ]
+}
+</script>
+
+<!-- Structured Data: BreadcrumbList -->
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@@type": "ListItem",
+            "position": 1,
+            "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}",
+            "item": "{{ route('home') }}"
+        },
+        {
+            "@@type": "ListItem",
+            "position": 2,
+            "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم' : 'Browse Restaurants' }}"
+        }
+    ]
+}
+</script>
+@endpush
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
         <!-- Filters Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفية النتائج' : 'Filter Results' }}</h2>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6 sm:mb-8">
+            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفية النتائج' : 'Filter Results' }}</h2>
             <form action="{{ route('search') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                     <!-- Search -->
-                    <div class="lg:col-span-2 relative">
+                    <div class="sm:col-span-2 lg:col-span-2 relative">
+                        <label for="index-live-search" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم' : 'Search for a restaurant' }}</label>
                         <input type="text" name="search" id="index-live-search"
                             placeholder="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم...' : 'Search for a restaurant...' }}"
                             value="{{ $filters['search'] ?? '' }}"
@@ -22,37 +77,46 @@
                     </div>
 
                     <!-- City -->
-                    <select name="city_id" id="filter-city"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
-                        <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع المدن' : 'All Cities' }}</option>
-                        @foreach($cities as $city)
-                            <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>
-                                {{ $city->name_ar ?? $city->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div>
+                        <label for="filter-city" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المدينة' : 'City' }}</label>
+                        <select name="city_id" id="filter-city"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
+                            <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع المدن' : 'All Cities' }}</option>
+                            @foreach($cities as $city)
+                                <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>
+                                    {{ $city->name_ar ?? $city->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <!-- Zone -->
-                    <select name="zone_id" id="filter-zone"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
-                        <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع المناطق' : 'All Zones' }}</option>
-                    </select>
+                    <div>
+                        <label for="filter-zone" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المنطقة' : 'Zone' }}</label>
+                        <select name="zone_id" id="filter-zone"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
+                            <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع المناطق' : 'All Zones' }}</option>
+                        </select>
+                    </div>
 
                     <!-- Category -->
-                    <select name="category_id"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
-                        <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع الأقسام' : 'All Categories' }}</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ ($filters['category_id'] ?? '') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name_ar ?? $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div>
+                        <label for="filter-category" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'القسم' : 'Category' }}</label>
+                        <select name="category_id" id="filter-category"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none bg-white text-sm">
+                            <option value="">{{ ($currentLocale ?? 'ar') === 'ar' ? 'جميع الأقسام' : 'All Categories' }}</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ ($filters['category_id'] ?? '') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name_ar ?? $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <button type="submit"
-                        class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-8 rounded-xl transition-colors duration-200 text-sm shadow-sm">
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 sm:px-8 rounded-xl transition-colors duration-200 text-sm shadow-sm flex-shrink-0">
                         🔍 {{ ($currentLocale ?? 'ar') === 'ar' ? 'بحث' : 'Search' }}
                     </button>
                     <a href="{{ route('search') }}" class="text-gray-500 hover:text-primary-600 text-sm">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إعادة تعيين' : 'Reset' }}</a>
@@ -61,19 +125,19 @@
         </div>
 
         <!-- Results Header -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}</h1>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}</h1>
                 <p class="text-sm text-gray-500 mt-1">
                     {{ $restaurants->total() }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'نتيجة' : 'results' }}
                 </p>
             </div>
 
             <!-- Sort -->
-            <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-500">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ترتيب حسب:' : 'Sort by:' }}</span>
-                <select onchange="window.location.href=this.value"
-                    class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-primary-500">
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <label for="sort-select" class="text-sm text-gray-500 whitespace-nowrap">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ترتيب:' : 'Sort:' }}</label>
+                <select id="sort-select" onchange="window.location.href=this.value"
+                    class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-primary-500 min-w-0">
                     <option value="{{ route('search', array_merge($filters, ['sort' => 'name'])) }}" {{ ($filters['sort'] ?? 'name') === 'name' ? 'selected' : '' }}>
                         {{ ($currentLocale ?? 'ar') === 'ar' ? 'الاسم' : 'Name' }}
                     </option>
@@ -89,39 +153,41 @@
 
         <!-- Restaurant Cards Grid -->
         @if($restaurants->isNotEmpty())
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 @foreach($restaurants as $restaurant)
                     @if($restaurant->slug)
                     <a href="{{ route('restaurant.show', $restaurant->slug) }}"
-                        class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
+                        class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200"
+                        title="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' menu' }}">
                         <!-- Logo -->
-                        <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+                        <div class="aspect-square bg-gray-50 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
                             @if($restaurant->logo_url)
                                 <img data-src="{{ $restaurant->logo_url }}"
-                                    alt="{{ $restaurant->name }}"
+                                    alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' menu' }}"
                                     class="lazy-image w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                                    loading="lazy">
+                                    loading="lazy"
+                                    width="200" height="200">
                             @else
-                                <div class="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center">
-                                    <span class="text-xl font-bold text-primary-600">{{ mb_substr($restaurant->name, 0, 1) }}</span>
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-primary-100 rounded-full flex items-center justify-center">
+                                    <span class="text-lg sm:text-xl font-bold text-primary-600">{{ mb_substr(($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name, 0, 1) }}</span>
                                 </div>
                             @endif
                         </div>
 
                         <!-- Info -->
-                        <div class="p-3 border-t border-gray-50">
-                            <h3 class="font-bold text-gray-800 text-sm truncate text-center">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h3>
+                        <div class="p-2 sm:p-3 border-t border-gray-50">
+                            <h3 class="font-bold text-gray-800 text-xs sm:text-sm truncate text-center">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h3>
                             @if($restaurant->categories->isNotEmpty())
-                                <p class="text-xs text-gray-400 mt-1 truncate text-center">
+                                <p class="text-[10px] sm:text-xs text-gray-400 mt-1 truncate text-center">
                                     {{ $restaurant->categories->pluck(($currentLocale ?? 'ar') === 'ar' ? 'name_ar' : 'name')->map(fn($v, $k) => $v ?: $restaurant->categories[$k]->name)->take(2)->implode(' • ') }}
                                 </p>
                             @endif
                             @if($restaurant->menuImages->isNotEmpty())
-                                <div class="flex items-center justify-center gap-1 mt-2">
+                                <div class="flex items-center justify-center gap-1 mt-1.5 sm:mt-2">
                                     <svg class="w-3 h-3 text-accent-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
                                     </svg>
-                                    <span class="text-xs text-gray-400">{{ $restaurant->menuImages->count() }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'صور' : 'images' }}</span>
+                                    <span class="text-[10px] sm:text-xs text-gray-400">{{ $restaurant->menuImages->count() }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'صور' : 'images' }}</span>
                                 </div>
                             @endif
                         </div>
@@ -129,7 +195,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-10 flex justify-center">
+            <div class="mt-8 sm:mt-10 flex justify-center overflow-x-auto">
                 {{ $restaurants->withQueryString()->links('pagination.tailwind') }}
             </div>
         @else

@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /lang/
+
+# Sitemap
+Sitemap: https://nakol-eh.app/sitemap.xml

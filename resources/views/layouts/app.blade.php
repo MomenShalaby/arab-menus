@@ -3,19 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - ابحث عن منيوهات المطاعم بسهولة' : 'Nakol Eh - Find restaurant menus easily')">
-    <meta name="keywords" content="ناكل ايه, nakol eh, منيوهات, مطاعم, توصيل, قوائم طعام, مصر, restaurant menus">
-    <meta name="robots" content="index, follow">
+    <meta name="description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر. ابحث عن منيو أي مطعم واعرف الأسعار والفروع بسهولة' : 'Nakol Eh - Restaurant menu guide in Egypt. Find any restaurant menu, prices and branches easily')">
+    <meta name="keywords" content="@yield('meta_keywords', 'ناكل ايه, nakol eh, منيوهات, مطاعم, منيو, اسعار, قوائم طعام, مصر, restaurant menus, menu prices, Egypt restaurants, food delivery')">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="Nakol Eh - ناكل ايه">
+    <meta name="theme-color" content="#dc2626">
 
-    <title>@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم' : 'Nakol Eh - Restaurant Menu Guide')</title>
+    <title>@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')</title>
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Alternate language URLs -->
+    <link rel="alternate" hreflang="ar" href="{{ url()->current() }}?lang=ar">
+    <link rel="alternate" hreflang="en" href="{{ url()->current() }}?lang=en">
+    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')">
+    <meta property="og:description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant menu guide in Egypt')">
+    <meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">
+    <meta property="og:site_name" content="ناكل ايه - Nakol Eh">
+    <meta property="og:locale" content="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ar_EG' : 'en_US' }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')">
+    <meta name="twitter:description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant menu guide in Egypt')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/logo.png'))">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
 
     <!-- Arabic-friendly font + English font -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -128,7 +156,7 @@
         .lazy-image.loaded {
             opacity: 1;
         }
-        
+
         /* Cookie banner animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
@@ -145,6 +173,42 @@
     </style>
 
     @stack('styles')
+
+    <!-- Structured Data: WebSite (Sitelinks Search Box) -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "ناكل ايه - Nakol Eh",
+        "alternateName": "Nakol Eh",
+        "url": "{{ url('/') }}",
+        "description": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'دليلك الشامل لمنيوهات المطاعم في مصر' : 'Your comprehensive guide to restaurant menus in Egypt' }}",
+        "inLanguage": ["ar", "en"],
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": {
+                "@@type": "EntryPoint",
+                "urlTemplate": "{{ url('/search') }}?search={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Organization",
+        "name": "ناكل ايه - Nakol Eh",
+        "url": "{{ url('/') }}",
+        "logo": "{{ asset('images/logo.png') }}",
+        "sameAs": []
+    }
+    </script>
+
+    @stack('structured_data')
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1389148167793942"
      crossorigin="anonymous"></script>
 </head>
@@ -154,20 +218,21 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/logo.png') }}" alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه' : 'Nakol Eh' }}" class="h-12 w-auto">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 flex-shrink-0">
+                    <img src="{{ asset('images/logo.png') }}" alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم' : 'Nakol Eh - Restaurant Menu Guide' }}" class="h-10 w-auto sm:h-12" width="48" height="48">
                     <span class="text-lg font-extrabold text-primary-600 hidden sm:block">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه' : 'Nakol Eh' }}</span>
                 </a>
 
                 <!-- Quick Search (Desktop) -->
                 <div class="hidden md:block flex-1 max-w-md mx-8 relative">
                     <form action="{{ route('search') }}" method="GET" class="relative">
+                        <label for="nav-live-search" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم' : 'Search for a restaurant' }}</label>
                         <input type="text" name="search" id="nav-live-search"
                             placeholder="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم...' : 'Search for a restaurant...' }}"
                             value="{{ request('search') }}"
                             autocomplete="off"
                             class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-sm">
-                        <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600">
+                        <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600" aria-label="{{ ($currentLocale ?? 'ar') === 'ar' ? 'بحث' : 'Search' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
@@ -177,8 +242,8 @@
                     <div id="nav-search-results" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 hidden max-h-80 overflow-y-auto"></div>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="flex items-center gap-4">
+                <!-- Desktop Navigation Links -->
+                <div class="hidden md:flex items-center gap-4">
                     <a href="{{ route('home') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}</a>
                     <a href="{{ route('search') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم' : 'Browse' }}</a>
                     <a href="{{ route('nakl-eih') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟' : 'Nakol Eh?' }}</a>
@@ -193,6 +258,42 @@
                         <a href="{{ route('lang.switch', 'ar') }}" class="flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-colors">
                             عربي 🌐
                         </a>
+                    @endif
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="{{ ($currentLocale ?? 'ar') === 'ar' ? 'القائمة' : 'Menu' }}" aria-expanded="false">
+                    <svg class="w-6 h-6" id="mobile-menu-icon-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg class="w-6 h-6 hidden" id="mobile-menu-icon-close" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 bg-white shadow-lg">
+            <!-- Mobile Search -->
+            <div class="px-4 py-3 border-b border-gray-100">
+                <form action="{{ route('search') }}" method="GET" class="relative">
+                    <label for="mobile-search" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم' : 'Search for a restaurant' }}</label>
+                    <input type="text" name="search" id="mobile-search"
+                        placeholder="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم...' : 'Search...' }}"
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-sm">
+                </form>
+            </div>
+            <div class="px-4 py-3 space-y-1">
+                <a href="{{ route('home') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🏠 الرئيسية' : '🏠 Home' }}</a>
+                <a href="{{ route('search') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🍽️ تصفح المطاعم' : '🍽️ Browse Restaurants' }}</a>
+                <a href="{{ route('nakl-eih') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🤔 ناكل ايه؟' : '🤔 Nakol Eh?' }}</a>
+                <a href="{{ route('picker-wheel') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🎡 عجلة الاختيار' : '🎡 Picker Wheel' }}</a>
+                <div class="pt-2 border-t border-gray-100 mt-2">
+                    @if(($currentLocale ?? 'ar') === 'ar')
+                        <a href="{{ route('lang.switch', 'en') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 English</a>
+                    @else
+                        <a href="{{ route('lang.switch', 'ar') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 عربي</a>
                     @endif
                 </div>
             </div>
@@ -277,6 +378,11 @@
 
             <div class="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
                 <p>© {{ date('Y') }} {{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه. جميع الحقوق محفوظة.' : 'Nakol Eh. All rights reserved.' }}</p>
+                <p class="mt-2 text-xs text-gray-600">
+                    {{ ($currentLocale ?? 'ar') === 'ar'
+                        ? 'ناكل ايه - أكبر دليل لمنيوهات المطاعم في مصر. ابحث عن منيو أي مطعم واعرف الأسعار والفروع وأرقام التوصيل.'
+                        : 'Nakol Eh - The largest restaurant menu directory in Egypt. Find any restaurant menu, prices, branches and delivery numbers.' }}
+                </p>
             </div>
         </div>
     </footer>
@@ -304,27 +410,27 @@
                         {{ ($currentLocale ?? 'ar') === 'ar' ? 'ملفات تعريف الارتباط (Cookies)' : 'Cookie Consent' }}
                     </h3>
                     <p class="text-sm text-gray-600 leading-relaxed">
-                        {{ ($currentLocale ?? 'ar') === 'ar' 
-                            ? 'نستخدم ملفات تعريف الارتباط لتحسين تجربتك وعرض إعلانات مخصصة. بالموافقة، تسمح لنا باستخدام هذه الملفات.' 
+                        {{ ($currentLocale ?? 'ar') === 'ar'
+                            ? 'نستخدم ملفات تعريف الارتباط لتحسين تجربتك وعرض إعلانات مخصصة. بالموافقة، تسمح لنا باستخدام هذه الملفات.'
                             : 'We use cookies to improve your experience and show personalized ads. By accepting, you allow us to use these cookies.' }}
                     </p>
                 </div>
             </div>
-            
+
             <div class="flex flex-col-reverse sm:flex-row gap-3">
-                <button id="decline-cookies" 
+                <button id="decline-cookies"
                     class="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm">
                     {{ ($currentLocale ?? 'ar') === 'ar' ? 'رفض' : 'Decline' }}
                 </button>
-                <button id="accept-cookies" 
+                <button id="accept-cookies"
                     class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors text-sm shadow-lg">
                     {{ ($currentLocale ?? 'ar') === 'ar' ? 'موافق' : 'Accept' }}
                 </button>
             </div>
-            
+
             <p class="text-xs text-gray-400 mt-4 text-center">
-                {{ ($currentLocale ?? 'ar') === 'ar' 
-                    ? 'يمكنك تغيير تفضيلاتك في أي وقت من إعدادات المتصفح' 
+                {{ ($currentLocale ?? 'ar') === 'ar'
+                    ? 'يمكنك تغيير تفضيلاتك في أي وقت من إعدادات المتصفح'
                     : 'You can change your preferences anytime in your browser settings' }}
             </p>
         </div>
@@ -458,26 +564,26 @@
             const CONSENT_KEY = 'nakol_eh_cookie_consent';
             const consentModal = document.getElementById('cookie-consent');
             const adSlots = document.querySelectorAll('.ad-slot');
-            
+
             // Check if consent has been given
             const consent = localStorage.getItem(CONSENT_KEY);
-            
+
             // Hide ads if consent was declined
             if (consent === 'declined') {
                 adSlots.forEach(slot => slot.style.display = 'none');
             }
-            
+
             if (!consent) {
                 // Hide ads until consent is given
                 adSlots.forEach(slot => slot.style.display = 'none');
-                
+
                 // Show consent banner after a short delay
                 setTimeout(() => {
                     consentModal.classList.remove('hidden');
                     consentModal.classList.add('flex');
                 }, 1000);
             }
-            
+
             // Accept button
             document.getElementById('accept-cookies').addEventListener('click', () => {
                 localStorage.setItem(CONSENT_KEY, 'accepted');
@@ -486,11 +592,12 @@
                 // Show ads
                 adSlots.forEach(slot => slot.style.display = '');
                 // Reload to initialize AdSense if needed
-                if ({{ ($adsEnabled ?? false) ? 'true' : 'false' }}) {
+                const adsEnabled = {{ ($adsEnabled ?? false) ? 'true' : 'false' }};
+                if (adsEnabled) {
                     setTimeout(() => location.reload(), 300);
                 }
             });
-            
+
             // Decline button
             document.getElementById('decline-cookies').addEventListener('click', () => {
                 localStorage.setItem(CONSENT_KEY, 'declined');
@@ -503,5 +610,24 @@
     </script>
 
     @stack('scripts')
+
+    <!-- Mobile menu toggle -->
+    <script>
+        (function() {
+            const btn = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+            const iconOpen = document.getElementById('mobile-menu-icon-open');
+            const iconClose = document.getElementById('mobile-menu-icon-close');
+            if (btn && menu) {
+                btn.addEventListener('click', () => {
+                    const isOpen = !menu.classList.contains('hidden');
+                    menu.classList.toggle('hidden');
+                    iconOpen.classList.toggle('hidden');
+                    iconClose.classList.toggle('hidden');
+                    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

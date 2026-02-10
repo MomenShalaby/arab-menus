@@ -1,18 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'ناكل ايه؟ - اختر مطعمك عشوائياً')
-@section('meta_description', 'مش عارف تاكل ايه؟ خلينا نساعدك! اختار من الفئات اللي بتحبها وهنختارلك مطعم عشوائي')
+@section('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟ - اختر مطعمك عشوائياً | دليل المطاعم في مصر' : 'Nakol Eh? - Random Restaurant Picker | Egypt Restaurant Guide')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'مش عارف تاكل ايه؟ خلينا نساعدك! اختار من الفئات اللي بتحبها وهنختارلك مطعم عشوائي من أكتر من ' . (\App\Models\Restaurant::count()) . ' مطعم' : 'Can\'t decide what to eat? Let us help! Pick your favorite categories and we\'ll choose a random restaurant for you')
+@section('meta_keywords', 'ناكل ايه, اختيار مطعم عشوائي, random restaurant picker, مطاعم مصر, اقتراح مطعم')
+
+@push('structured_data')
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "WebApplication",
+    "name": "ناكل ايه؟ - اختيار مطعم عشوائي",
+    "description": "اختر مطعمك عشوائياً من بين آلاف المطاعم في مصر",
+    "url": "{{ route('nakl-eih') }}",
+    "applicationCategory": "FoodService",
+    "operatingSystem": "Web"
+}
+</script>
+@endpush
 
 @section('content')
-    <div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4">ناكل ايه؟ 🤔</h1>
-            <p class="text-lg text-gray-600">مش عارف تاكل ايه؟ اختار الفئات اللي بتحبها وهنختارلك مطعم عشوائياً!</p>
+        <div class="text-center mb-8 sm:mb-12">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 mb-3 sm:mb-4">ناكل ايه؟ 🤔</h1>
+            <p class="text-base sm:text-lg text-gray-600">مش عارف تاكل ايه؟ اختار الفئات اللي بتحبها وهنختارلك مطعم عشوائياً!</p>
         </div>
 
         <!-- Category Selection -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 mb-8">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />

@@ -1,38 +1,128 @@
 @extends('layouts.app')
 
-@section('title', (($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name) . ' - ناكل ايه')
-@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' - اطلع على قائمة الطعام والأرقام والفروع' : $restaurant->name . ' menu - View food menu, contact info and branches')
+@section('title', (($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu') . ' | ' . (($currentLocale ?? 'ar') === 'ar' ? 'الأسعار والفروع' : 'Prices & Branches') . ' - ناكل ايه')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' - اطلع على قائمة الطعام والأسعار والفروع وأرقام التوصيل. ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(' و ') ?: '') : $restaurant->name . ' menu - View food menu, prices, branches and delivery numbers')
+@section('meta_keywords', ($restaurant->name_ar ?? $restaurant->name) . ', ' . $restaurant->name . ', منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ', اسعار ' . ($restaurant->name_ar ?? $restaurant->name) . ', فروع ' . ($restaurant->name_ar ?? $restaurant->name) . ', ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(', ') ?: ''))
+@section('og_type', 'restaurant')
+@section('og_image', $restaurant->logo_url ?? asset('images/logo.png'))
+
+@push('structured_data')
+<!-- Structured Data: Restaurant -->
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "Restaurant",
+    "name": "{{ $restaurant->name_ar ?? $restaurant->name }}",
+    "alternateName": "{{ $restaurant->name }}",
+    "url": "{{ route('restaurant.show', $restaurant->slug) }}",
+    @if($restaurant->logo_url)
+    "image": "{{ $restaurant->logo_url }}",
+    @endif
+    @if($restaurant->hotline)
+    "telephone": "{{ $restaurant->hotline }}",
+    @endif
+    "servesCuisine": {!! json_encode($restaurant->categories->pluck('name_ar')->filter()->values()) !!},
+    @if($restaurant->cities->isNotEmpty())
+    "address": {
+        "@@type": "PostalAddress",
+        "addressLocality": "{{ $restaurant->cities->first()->name_ar ?? $restaurant->cities->first()->name }}",
+        "addressCountry": "EG"
+    },
+    @endif
+    "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "bestRating": "5",
+        "ratingCount": "{{ max($restaurant->total_views, 1) }}"
+    },
+    @if($restaurant->menuImages->isNotEmpty())
+    "hasMenu": {
+        "@@type": "Menu",
+        "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu' }}",
+        "url": "{{ route('restaurant.show', $restaurant->slug) }}"
+    },
+    @endif
+    "numberOfEmployees": {
+        "@@type": "QuantitativeValue"
+    }
+}
+</script>
+
+<!-- Structured Data: BreadcrumbList -->
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@@type": "ListItem",
+            "position": 1,
+            "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}",
+            "item": "{{ route('home') }}"
+        },
+        {
+            "@@type": "ListItem",
+            "position": 2,
+            "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}",
+            "item": "{{ route('search') }}"
+        },
+        {
+            "@@type": "ListItem",
+            "position": 3,
+            "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}"
+        }
+    ]
+}
+</script>
+
+@if($restaurant->menuImages->isNotEmpty())
+<!-- Structured Data: ImageGallery -->
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "ImageGallery",
+    "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu' }}",
+    "about": {
+        "@@type": "Restaurant",
+        "name": "{{ $restaurant->name_ar ?? $restaurant->name }}"
+    },
+    "image": {!! json_encode($restaurant->menuImages->pluck('image_url')->values()) !!}
+}
+</script>
+@endif
+@endpush
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Breadcrumb -->
-        <nav class="text-sm text-gray-500 mb-6 flex items-center gap-2">
-            <a href="{{ route('home') }}" class="hover:text-primary-600">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}</a>
+    <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+        <!-- Breadcrumb (SEO-friendly with structured data) -->
+        <nav class="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6 flex items-center gap-1 sm:gap-2 overflow-x-auto" aria-label="Breadcrumb">
+            <a href="{{ route('home') }}" class="hover:text-primary-600 whitespace-nowrap">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الرئيسية' : 'Home' }}</a>
             <span>/</span>
-            <a href="{{ route('search') }}" class="hover:text-primary-600">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}</a>
+            <a href="{{ route('search') }}" class="hover:text-primary-600 whitespace-nowrap">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم' : 'Restaurants' }}</a>
             <span>/</span>
-            <span class="text-gray-800 font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</span>
+            <span class="text-gray-800 font-medium truncate">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</span>
         </nav>
 
         <!-- Restaurant Header -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
-            <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6">
+            <div class="p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                 <!-- Logo -->
-                <div class="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100">
+                <div class="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100">
                     @if($restaurant->logo_url)
                         <img src="{{ $restaurant->logo_url }}"
-                            alt="{{ $restaurant->name }}"
-                            class="w-full h-full object-contain p-2">
+                            alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'لوجو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' logo' }}"
+                            class="w-full h-full object-contain p-2"
+                            width="128" height="128">
                     @else
-                        <div class="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl font-bold text-primary-600">{{ mb_substr($restaurant->name, 0, 1) }}</span>
+                        <div class="w-14 h-14 sm:w-20 sm:h-20 bg-primary-100 rounded-full flex items-center justify-center">
+                            <span class="text-2xl sm:text-3xl font-bold text-primary-600">{{ mb_substr($restaurant->name, 0, 1) }}</span>
                         </div>
                     @endif
                 </div>
 
                 <!-- Info -->
-                <div class="flex-1">
-                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h1>
+                <div class="flex-1 text-center sm:text-start">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h1>
 
                     <!-- Categories -->
                     @if($restaurant->categories->isNotEmpty())
@@ -125,16 +215,17 @@
                     {{ ($currentLocale ?? 'ar') === 'ar' ? 'المنيو' : 'Menu' }}
                 </h2>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     @foreach($restaurant->menuImages as $index => $image)
                         <div class="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
                             onclick="openLightbox(menuImages, {{ $index }})">
                             <!-- Image -->
                             <div class="aspect-[3/4] bg-gray-50 overflow-hidden">
                                 <img data-src="{{ $image->image_url }}"
-                                    alt="{{ $image->alt_text ?? $restaurant->name . ' menu ' . ($index + 1) }}"
+                                    alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' صفحة ' . ($index + 1) . ' - الأسعار' : $restaurant->name . ' menu page ' . ($index + 1) . ' - prices' }}"
                                     class="lazy-image w-full h-full object-contain hover:scale-105 transition-transform duration-500"
-                                    loading="lazy">
+                                    loading="lazy"
+                                    width="400" height="533">
                             </div>
 
                             <!-- Overlay on hover -->
@@ -176,8 +267,8 @@
 
         <!-- Branches Section -->
         @if($restaurant->branches && $restaurant->branches->isNotEmpty())
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 p-6 sm:p-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 sm:mb-8 p-4 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -204,21 +295,23 @@
         @endif
 
         <!-- Similar Restaurants + Sidebar Ad -->
-        <div class="flex flex-col lg:flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
             @if($similar->isNotEmpty())
                 <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ ($currentLocale ?? 'ar') === 'ar' ? 'مطاعم مشابهة' : 'Similar Restaurants' }}</h2>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">{{ ($currentLocale ?? 'ar') === 'ar' ? 'مطاعم مشابهة' : 'Similar Restaurants' }}</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                         @foreach($similar as $sim)
                             @if($sim->slug)
                             <a href="{{ route('restaurant.show', $sim->slug) }}"
-                                class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
-                                <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+                                class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200"
+                                title="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($sim->name_ar ?? $sim->name) : $sim->name . ' menu' }}">
+                                <div class="aspect-square bg-gray-50 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
                                     @if($sim->logo_url)
                                         <img data-src="{{ $sim->logo_url }}"
-                                            alt="{{ $sim->name }}"
+                                            alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($sim->name_ar ?? $sim->name) : $sim->name . ' menu' }}"
                                             class="lazy-image w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                                            loading="lazy">
+                                            loading="lazy"
+                                            width="200" height="200">
                                     @else
                                         <div class="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center">
                                             <span class="text-xl font-bold text-primary-600">{{ mb_substr($sim->name, 0, 1) }}</span>

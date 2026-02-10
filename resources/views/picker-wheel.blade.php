@@ -1,19 +1,34 @@
 @extends('layouts.app')
 
-@section('title', 'عجلة الاختيار - اختر بين المطاعم')
-@section('meta_description', 'مش عارف تختار بين المطاعم؟ اكتب أسماء المطاعم ودور العجلة!')
+@section('title', ($currentLocale ?? 'ar') === 'ar' ? 'عجلة اختيار المطاعم - اختر بين المطاعم بسهولة | ناكل ايه' : 'Restaurant Picker Wheel - Choose Between Restaurants | Nakol Eh')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'مش عارف تختار بين المطاعم؟ اكتب أسماء المطاعم ودور العجلة! أداة مجانية لاختيار المطعم بسهولة' : 'Can\'t choose between restaurants? Add restaurant names and spin the wheel! Free tool to pick a restaurant easily')
+@section('meta_keywords', 'عجلة اختيار مطعم, picker wheel restaurants, اختيار بين مطاعم, random picker, عجلة الحظ مطاعم')
+
+@push('structured_data')
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "WebApplication",
+    "name": "عجلة اختيار المطاعم",
+    "description": "أداة مجانية لاختيار المطعم بسهولة عن طريق تدوير العجلة",
+    "url": "{{ route('picker-wheel') }}",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web"
+}
+</script>
+@endpush
 
 @section('content')
-    <div class="max-w-5xl mx-auto px-4 py-12">
+    <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12">
         <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4">عجلة الاختيار 🎡</h1>
-            <p class="text-lg text-gray-600">مش عارف تختار بين المطاعم؟ اكتب أسماءهم ودور العجلة!</p>
+        <div class="text-center mb-8 sm:mb-12">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 mb-3 sm:mb-4">عجلة الاختيار 🎡</h1>
+            <p class="text-base sm:text-lg text-gray-600">مش عارف تختار بين المطاعم؟ اكتب أسماءهم ودور العجلة!</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <!-- Wheel Container -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8">
                 <div class="relative flex flex-col items-center">
                     <!-- Pointer -->
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 z-10">
@@ -21,7 +36,7 @@
                     </div>
 
                     <!-- Canvas -->
-                    <canvas id="wheel-canvas" width="340" height="340" class="drop-shadow-2xl"></canvas>
+                    <canvas id="wheel-canvas" width="340" height="340" class="drop-shadow-2xl max-w-full h-auto"></canvas>
 
                     <!-- Spin Button -->
                     <button id="spin-btn"
@@ -44,7 +59,7 @@
             </div>
 
             <!-- Input Section -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

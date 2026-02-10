@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
-@section('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - ابحث عن منيوهات المطاعم بسهولة' : 'Nakol Eh - Find Restaurant Menus Easily')
-@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن منيوهات المطاعم في مصر بسهولة. دليل شامل للمنيوهات.' : 'Find restaurant menus in Egypt easily. Comprehensive menu guide.')
+@section('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر | ابحث عن منيو أي مطعم' : 'Nakol Eh - Restaurant Menu Guide in Egypt | Find Any Restaurant Menu')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - أكبر دليل لمنيوهات المطاعم في مصر. ابحث عن منيو أي مطعم واعرف الأسعار والفروع وأرقام التوصيل. أكثر من ' . ($stats['total_restaurants'] ?? 0) . ' مطعم.' : 'Nakol Eh - The largest restaurant menu guide in Egypt. Find any restaurant menu, prices, branches and delivery numbers. Over ' . ($stats['total_restaurants'] ?? 0) . ' restaurants.')
+@section('meta_keywords', 'ناكل ايه, nakol eh, منيوهات مطاعم, منيو مطعم, اسعار مطاعم, فروع مطاعم, ارقام توصيل, restaurant menus Egypt, food menu, delivery numbers')
 
 @section('content')
     <!-- Hero Section -->
@@ -18,26 +19,27 @@
             </svg>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 py-16 sm:py-24 relative z-10">
-            <div class="text-center mb-10">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight">
-                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه' : 'Nakol Eh' }}
+        <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 md:py-24 relative z-10">
+            <div class="text-center mb-8 sm:mb-10">
+                <h1 class="text-3xl sm:text-4xl lg:text-6xl font-extrabold mb-4 leading-tight">
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم' : 'Nakol Eh - Restaurant Menu Guide' }}
                 </h1>
-                <p class="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto">
-                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن منيو أي مطعم بسهولة تامة' : 'Find any restaurant menu easily' }}
+                <p class="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن منيو أي مطعم في مصر واعرف الأسعار والفروع وأرقام التوصيل بسهولة تامة' : 'Find any restaurant menu in Egypt with prices, branches and delivery numbers easily' }}
                 </p>
             </div>
 
             <!-- Search Form -->
             <div class="max-w-3xl mx-auto">
-                <form action="{{ route('search') }}" method="GET" class="bg-white rounded-2xl shadow-2xl p-6 space-y-4" id="search-form">
+                <form action="{{ route('search') }}" method="GET" class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4" id="search-form" role="search">
                     <!-- Quick Search with Autocomplete -->
                     <div class="relative">
+                        <label for="live-search-input" class="sr-only">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم بالاسم' : 'Search for a restaurant by name' }}</label>
                         <input type="text" name="search" id="live-search-input"
                             placeholder="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ابحث عن مطعم بالاسم...' : 'Search for a restaurant by name...' }}"
                             value="{{ old('search') }}"
                             autocomplete="off"
-                            class="w-full px-5 py-3 rounded-xl border border-gray-200 text-gray-800 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-lg">
+                            class="w-full px-4 sm:px-5 py-3 rounded-xl border border-gray-200 text-gray-800 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none text-base sm:text-lg">
                         <!-- Autocomplete Dropdown -->
                         <div id="search-results" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 hidden max-h-80 overflow-y-auto"></div>
                     </div>
@@ -118,11 +120,11 @@
 
     <!-- Featured Restaurants -->
     @if($featured->isNotEmpty())
-    <section class="max-w-7xl mx-auto px-4 py-12">
-        <div class="flex items-center justify-between mb-8">
+    <section class="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        <div class="flex items-center justify-between mb-6 sm:mb-8">
             <div>
-                <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم المميزة' : 'Featured Restaurants' }}</h2>
-                <p class="text-gray-500 mt-1">{{ ($currentLocale ?? 'ar') === 'ar' ? 'أكثر المطاعم مشاهدة' : 'Most viewed restaurants' }}</p>
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">{{ ($currentLocale ?? 'ar') === 'ar' ? 'المطاعم المميزة' : 'Featured Restaurants' }}</h2>
+                <p class="text-gray-500 mt-1 text-sm sm:text-base">{{ ($currentLocale ?? 'ar') === 'ar' ? 'أكثر المطاعم مشاهدة' : 'Most viewed restaurants' }}</p>
             </div>
             <a href="{{ route('search') }}" class="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1">
                 {{ ($currentLocale ?? 'ar') === 'ar' ? 'عرض الكل' : 'View All' }}
@@ -132,7 +134,7 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
             @foreach($featured as $index => $restaurant)
                 @if($restaurant->slug)
 
@@ -142,32 +144,34 @@
                 @endif
 
                 <a href="{{ route('restaurant.show', $restaurant->slug) }}"
-                    class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200">
+                    class="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-200"
+                    title="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' menu' }}">
                     <!-- Logo -->
-                    <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+                    <div class="aspect-square bg-gray-50 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
                         @if($restaurant->logo_url)
                             <img data-src="{{ $restaurant->logo_url }}"
-                                alt="{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}"
+                                alt="{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' - اسعار وفروع' : ($restaurant->name) . ' menu - prices and branches' }}"
                                 class="lazy-image w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                                loading="lazy">
+                                loading="lazy"
+                                width="200" height="200">
                         @else
-                            <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                                <span class="text-2xl font-bold text-primary-600">{{ mb_substr(($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name, 0, 1) }}</span>
+                            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                                <span class="text-xl sm:text-2xl font-bold text-primary-600">{{ mb_substr(($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name, 0, 1) }}</span>
                             </div>
                         @endif
                     </div>
 
                     <!-- Info -->
-                    <div class="p-3 text-center border-t border-gray-50">
-                        <h3 class="font-bold text-gray-800 text-sm truncate">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h3>
+                    <div class="p-2 sm:p-3 text-center border-t border-gray-50">
+                        <h3 class="font-bold text-gray-800 text-xs sm:text-sm truncate">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h3>
                         @if($restaurant->categories->isNotEmpty())
-                            <p class="text-xs text-gray-400 mt-1 truncate">
+                            <p class="text-[10px] sm:text-xs text-gray-400 mt-1 truncate">
                                 {{ $restaurant->categories->pluck(($currentLocale ?? 'ar') === 'ar' ? 'name_ar' : 'name')->filter()->implode(' • ') ?: $restaurant->categories->pluck('name')->implode(' • ') }}
                             </p>
                         @endif
                         <div class="flex items-center justify-center gap-1 mt-1">
                             <svg class="w-3 h-3 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            <span class="text-xs text-gray-400">{{ number_format($restaurant->total_views) }}</span>
+                            <span class="text-[10px] sm:text-xs text-gray-400">{{ number_format($restaurant->total_views) }}</span>
                         </div>
                     </div>
                 </a>
@@ -194,6 +198,44 @@
         </div>
     </section>
     @endif
+
+    <!-- SEO Content Section - Keyword-rich informational content -->
+    <section class="bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 py-10 sm:py-14">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">
+                    {{ ($currentLocale ?? 'ar') === 'ar' ? 'دليلك الشامل لمنيوهات المطاعم في مصر' : 'Your Complete Guide to Restaurant Menus in Egypt' }}
+                </h2>
+                <div class="prose prose-sm sm:prose text-gray-600 leading-relaxed text-center max-w-none">
+                    @if(($currentLocale ?? 'ar') === 'ar')
+                        <p>
+                            <strong>ناكل ايه</strong> هو أكبر دليل إلكتروني لمنيوهات المطاعم في مصر.
+                            يساعدك الموقع في البحث عن منيو أي مطعم ومعرفة الأسعار والفروع وأرقام التوصيل بسهولة تامة.
+                            سواء كنت تبحث عن <strong>مطاعم فراخ</strong> أو <strong>بيتزا</strong> أو <strong>مشويات</strong> أو <strong>أكل بحري</strong> - هتلاقي كل اللي محتاجه هنا.
+                        </p>
+                        <p>
+                            استكشف أكثر من <strong>{{ number_format($stats['total_restaurants'] ?? 0) }} مطعم</strong> في
+                            <strong>{{ number_format($stats['total_cities'] ?? 0) }} مدينة</strong> مصرية.
+                            اعرف أسعار المنيو وقارن بين المطاعم واختار الأنسب ليك.
+                            استخدم خاصية <strong>"ناكل ايه؟"</strong> عشان الموقع يختارلك مطعم عشوائي لو مش عارف تاكل ايه!
+                        </p>
+                    @else
+                        <p>
+                            <strong>Nakol Eh</strong> is the largest online directory for restaurant menus in Egypt.
+                            Our platform helps you find any restaurant menu, check prices, locate branches, and get delivery numbers easily.
+                            Whether you're looking for <strong>chicken restaurants</strong>, <strong>pizza</strong>, <strong>grills</strong>, or <strong>seafood</strong> - you'll find everything here.
+                        </p>
+                        <p>
+                            Explore over <strong>{{ number_format($stats['total_restaurants'] ?? 0) }} restaurants</strong> across
+                            <strong>{{ number_format($stats['total_cities'] ?? 0) }} Egyptian cities</strong>.
+                            Check menu prices, compare restaurants, and pick the best one for you.
+                            Use the <strong>"Nakol Eh?"</strong> feature to get a random restaurant suggestion when you can't decide what to eat!
+                        </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </section>
 @endsection
 
 @push('styles')
