@@ -27,6 +27,6 @@ class SitemapController extends Controller
         $content = view('sitemap.index', compact('restaurants', 'cities', 'categories'))->render();
 
         return response($content, 200)
-            ->header('Content-Type', 'application/xml; charset=utf-8');
+            ->header('Content-Type', 'text/xml; charset=utf-8');
     }
 }
