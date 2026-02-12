@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', (($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu') . ' | ' . (($currentLocale ?? 'ar') === 'ar' ? 'الأسعار والفروع' : 'Prices & Branches') . ' - ناكل ايه')
-@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' - اطلع على قائمة الطعام والأسعار والفروع وأرقام التوصيل. ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(' و ') ?: '') : $restaurant->name . ' menu - View food menu, prices, branches and delivery numbers')
-@section('meta_keywords', ($restaurant->name_ar ?? $restaurant->name) . ', ' . $restaurant->name . ', منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ', اسعار ' . ($restaurant->name_ar ?? $restaurant->name) . ', فروع ' . ($restaurant->name_ar ?? $restaurant->name) . ', ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(', ') ?: ''))
+@section('title', (($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' | منيو مطعم ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu') . ' | ' . (($currentLocale ?? 'ar') === 'ar' ? 'الأسعار والفروع' : 'Prices & Branches') . ' - ناكل ايه')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' | منيو مطعم ' . ($restaurant->name_ar ?? $restaurant->name) . ' - اطلع على قائمة الطعام والأسعار والفروع وأرقام التوصيل. ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(' و ') ?: '') : $restaurant->name . ' menu - View food menu, prices, branches and delivery numbers')
+@section('meta_keywords', ($restaurant->name_ar ?? $restaurant->name) . ', ' . $restaurant->name . ', منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ', منيو مطعم ' . ($restaurant->name_ar ?? $restaurant->name) . ', اسعار ' . ($restaurant->name_ar ?? $restaurant->name) . ', فروع ' . ($restaurant->name_ar ?? $restaurant->name) . ', ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(', ') ?: ''))
 @section('og_type', 'restaurant')
 @section('og_image', $restaurant->logo_url ?? asset('images/logo.png'))
 
@@ -75,6 +75,26 @@
 }
 </script>
 
+<!-- Structured Data: WebPage -->
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "WebPage",
+    "name": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو مطعم ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu' }}",
+    "url": "{{ route('restaurant.show', $restaurant->slug) }}",
+    "description": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' مع الأسعار والفروع' : $restaurant->name . ' menu with prices and branches' }}",
+    "isPartOf": {
+        "@@type": "WebSite",
+        "name": "ناكل ايه",
+        "url": "{{ url('/') }}"
+    },
+    "about": {
+        "@@type": "Restaurant",
+        "name": "{{ $restaurant->name_ar ?? $restaurant->name }}"
+    }
+}
+</script>
+
 @if($restaurant->menuImages->isNotEmpty())
 <!-- Structured Data: ImageGallery -->
 <script type="application/ld+json">
@@ -122,7 +142,10 @@
 
                 <!-- Info -->
                 <div class="flex-1 text-center sm:text-start">
-                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{{ ($currentLocale ?? 'ar') === 'ar' ? ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name }}</h1>
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{{ ($currentLocale ?? 'ar') === 'ar' ? 'منيو مطعم ' . ($restaurant->name_ar ?? $restaurant->name) : $restaurant->name . ' Menu' }}</h1>
+                    @if(($currentLocale ?? 'ar') === 'ar')
+                        <p class="text-sm text-gray-500 mb-3">{{ 'منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ' • الأسعار • الفروع • أرقام التوصيل' }}</p>
+                    @endif
 
                     <!-- Categories -->
                     @if($restaurant->categories->isNotEmpty())
@@ -160,13 +183,18 @@
                     <!-- Details Row -->
                     <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                         @if($restaurant->cities->isNotEmpty())
+                            @php
+                                $cityNames = $restaurant->cities
+                                    ->map(fn($city) => ($currentLocale ?? 'ar') === 'ar' ? ($city->name_ar ?: $city->name) : $city->name)
+                                    ->implode(' • ');
+                            @endphp
                             <div class="flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                {{ $restaurant->cities->pluck(($currentLocale ?? 'ar') === 'ar' ? 'name_ar' : 'name')->map(fn($v, $k) => $v ?: $restaurant->cities[$k]->name)->implode(' • ') }}
+                                {{ $cityNames }}
                             </div>
                         @endif
 

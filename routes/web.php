@@ -32,6 +32,11 @@ Route::get('/nakl-eih', [HomeController::class, 'naklEih'])->name('nakl-eih');
 // Picker wheel
 Route::get('/picker-wheel', [HomeController::class, 'pickerWheel'])->name('picker-wheel');
 
+// Static trust pages
+Route::view('/about-us', 'pages.about')->name('about');
+Route::view('/contact-us', 'pages.contact')->name('contact');
+Route::view('/privacy-policy', 'pages.privacy')->name('privacy');
+
 // Restaurant detail page
 Route::get('/restaurant/{slug}', [RestaurantController::class, 'show'])->name('restaurant.show');
 

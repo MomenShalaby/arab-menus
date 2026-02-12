@@ -7,6 +7,8 @@
     <meta name="keywords" content="@yield('meta_keywords', 'ناكل ايه, nakol eh, منيوهات, مطاعم, منيو, اسعار, قوائم طعام, مصر, restaurant menus, menu prices, Egypt restaurants, food delivery')">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="Nakol Eh - ناكل ايه">
+    <meta name="application-name" content="ناكل ايه">
+    <meta name="apple-mobile-web-app-title" content="ناكل ايه">
     <meta name="theme-color" content="#dc2626">
 
     <title>@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')</title>
@@ -25,7 +27,7 @@
     <meta property="og:title" content="@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')">
     <meta property="og:description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant menu guide in Egypt')">
     <meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">
-    <meta property="og:site_name" content="ناكل ايه - Nakol Eh">
+    <meta property="og:site_name" content="ناكل ايه">
     <meta property="og:locale" content="{{ ($currentLocale ?? 'ar') === 'ar' ? 'ar_EG' : 'en_US' }}">
 
     <!-- Twitter Card -->
@@ -179,7 +181,7 @@
     {
         "@@context": "https://schema.org",
         "@@type": "WebSite",
-        "name": "ناكل ايه - Nakol Eh",
+        "name": "ناكل ايه",
         "alternateName": "Nakol Eh",
         "url": "{{ url('/') }}",
         "description": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'دليلك الشامل لمنيوهات المطاعم في مصر' : 'Your comprehensive guide to restaurant menus in Egypt' }}",
@@ -248,6 +250,9 @@
                     <a href="{{ route('search') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم' : 'Browse' }}</a>
                     <a href="{{ route('nakl-eih') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟' : 'Nakol Eh?' }}</a>
                     <a href="{{ route('picker-wheel') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? '🎡 العجلة' : '🎡 Wheel' }}</a>
+                    <a href="{{ route('about') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'من نحن' : 'About Us' }}</a>
+                    <a href="{{ route('contact') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'اتصل بنا' : 'Contact Us' }}</a>
+                    <a href="{{ route('privacy') }}" class="text-gray-600 hover:text-primary-600 text-sm font-medium">{{ ($currentLocale ?? 'ar') === 'ar' ? 'الخصوصية' : 'Privacy' }}</a>
 
                     <!-- Language Toggle -->
                     @if(($currentLocale ?? 'ar') === 'ar')
@@ -289,6 +294,9 @@
                 <a href="{{ route('search') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🍽️ تصفح المطاعم' : '🍽️ Browse Restaurants' }}</a>
                 <a href="{{ route('nakl-eih') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🤔 ناكل ايه؟' : '🤔 Nakol Eh?' }}</a>
                 <a href="{{ route('picker-wheel') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🎡 عجلة الاختيار' : '🎡 Picker Wheel' }}</a>
+                <a href="{{ route('about') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ℹ️ من نحن' : 'ℹ️ About Us' }}</a>
+                <a href="{{ route('contact') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '✉️ اتصل بنا' : '✉️ Contact Us' }}</a>
+                <a href="{{ route('privacy') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🔒 الخصوصية' : '🔒 Privacy' }}</a>
                 <div class="pt-2 border-t border-gray-100 mt-2">
                     @if(($currentLocale ?? 'ar') === 'ar')
                         <a href="{{ route('lang.switch', 'en') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 English</a>
@@ -341,6 +349,9 @@
                         <li><a href="{{ route('search') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'تصفح المطاعم' : 'Browse Restaurants' }}</a></li>
                         <li><a href="{{ route('nakl-eih') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟' : 'Nakol Eh?' }}</a></li>
                         <li><a href="{{ route('picker-wheel') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'عجلة الاختيار' : 'Picker Wheel' }}</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'من نحن' : 'About Us' }}</a></li>
+                        <li><a href="{{ route('contact') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'اتصل بنا' : 'Contact Us' }}</a></li>
+                        <li><a href="{{ route('privacy') }}" class="hover:text-primary-400 transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</a></li>
                     </ul>
                 </div>
 
