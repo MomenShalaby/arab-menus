@@ -16,9 +16,7 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
 
-    <!-- Alternate language URLs -->
-    <link rel="alternate" hreflang="ar" href="{{ url()->current() }}?lang=ar">
-    <link rel="alternate" hreflang="en" href="{{ url()->current() }}?lang=en">
+    <!-- Alternate URL -->
     <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
 
     <!-- Open Graph / Facebook -->

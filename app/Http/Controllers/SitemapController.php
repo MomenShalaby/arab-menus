@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\City;
 use App\Models\Restaurant;
 use Illuminate\Http\Response;
 
@@ -21,10 +19,7 @@ class SitemapController extends Controller
             ->orderByDesc('total_views')
             ->get();
 
-        $cities = City::select('id', 'name', 'updated_at')->get();
-        $categories = Category::select('id', 'name', 'updated_at')->get();
-
-        $content = view('sitemap.index', compact('restaurants', 'cities', 'categories'))->render();
+        $content = view('sitemap.index', compact('restaurants'))->render();
 
         return response($content, 200)
             ->header('Content-Type', 'text/xml; charset=utf-8');
