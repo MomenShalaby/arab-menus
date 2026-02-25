@@ -14,14 +14,16 @@
     <title>@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')</title>
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="{{ $canonicalUrl ?? request()->fullUrl() }}">
 
-    <!-- Alternate URL -->
-    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
+    <!-- hreflang: tell Google these are language variants, not duplicates -->
+    <link rel="alternate" hreflang="ar" href="{{ $hreflangArUrl ?? request()->url() }}">
+    <link rel="alternate" hreflang="en" href="{{ $hreflangEnUrl ?? request()->fullUrl() }}">
+    <link rel="alternate" hreflang="x-default" href="{{ $hreflangArUrl ?? request()->url() }}">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="{{ $canonicalUrl ?? request()->fullUrl() }}">
     <meta property="og:title" content="@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')">
     <meta property="og:description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant menu guide in Egypt')">
     <meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">

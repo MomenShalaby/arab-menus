@@ -38,6 +38,26 @@ class AppServiceProvider extends ServiceProvider
             $view->with('currentLocale', $locale);
             $view->with('isRtl', $locale === 'ar');
 
+            // --- SEO: Canonical & hreflang URLs ---
+            // Canonical = the current full URL (after SetLocaleMiddleware has already
+            // redirected ?lang=ar to the clean URL, so this is always correct).
+            $view->with('canonicalUrl', request()->fullUrl());
+
+            // Build the two language-alternate URLs for hreflang tags.
+            $queryWithoutLang = request()->except('lang');
+            $baseUrl          = request()->url();
+
+            $hreflangArUrl = empty($queryWithoutLang)
+                ? $baseUrl
+                : $baseUrl . '?' . http_build_query($queryWithoutLang);
+
+            $hreflangEnUrl = $baseUrl . '?' . http_build_query(
+                array_merge($queryWithoutLang, ['lang' => 'en'])
+            );
+
+            $view->with('hreflangArUrl', $hreflangArUrl);
+            $view->with('hreflangEnUrl', $hreflangEnUrl);
+
             // Share ads settings
             try {
                 $view->with('adsEnabled', Setting::adsEnabled());
