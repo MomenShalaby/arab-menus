@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="@yield('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر. ابحث عن منيو أي مطعم واعرف الأسعار والفروع بسهولة' : 'Nakol Eh - Restaurant menu guide in Egypt. Find any restaurant menu, prices and branches easily')">
     <meta name="keywords" content="@yield('meta_keywords', 'ناكل ايه, nakol eh, منيوهات, مطاعم, منيو, اسعار, قوائم طعام, مصر, restaurant menus, menu prices, Egypt restaurants, food delivery')">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="robots" content="@yield('robots_meta', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
     <meta name="author" content="Nakol Eh - ناكل ايه">
     <meta name="application-name" content="ناكل ايه">
     <meta name="apple-mobile-web-app-title" content="ناكل ايه">
@@ -14,7 +14,7 @@
     <title>@yield('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه - دليل منيوهات المطاعم في مصر' : 'Nakol Eh - Restaurant Menu Guide in Egypt')</title>
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="{{ $canonicalUrl ?? request()->fullUrl() }}">
+    <link rel="canonical" href="@yield('canonical_url', $canonicalUrl ?? request()->fullUrl())">
 
     <!-- hreflang: tell Google these are language variants, not duplicates -->
     <link rel="alternate" hreflang="ar" href="{{ $hreflangArUrl ?? request()->url() }}">

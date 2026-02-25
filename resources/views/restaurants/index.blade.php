@@ -1,15 +1,67 @@
 @extends('layouts.app')
 
 @php
-    $pageTitle = ($currentLocale ?? 'ar') === 'ar' ? 'تصفح منيوهات المطاعم' : 'Browse Restaurant Menus';
-    if (!empty($filters['search'])) {
-        $pageTitle = ($currentLocale ?? 'ar') === 'ar' ? 'نتائج البحث عن: ' . $filters['search'] : 'Search results for: ' . $filters['search'];
+    // --- Resolve active city / category objects ---
+    $activeCity     = !empty($filters['city_id'])     ? $cities->firstWhere('id', $filters['city_id'])         : null;
+    $activeCategory = !empty($filters['category_id']) ? $categories->firstWhere('id', $filters['category_id']) : null;
+    $isAr           = ($currentLocale ?? 'ar') === 'ar';
+
+    // --- Build SEO-friendly page title ---
+    if ($activeCity) {
+        $pageTitle = $isAr
+            ? 'مطاعم ' . ($activeCity->name_ar ?? $activeCity->name) . ' | منيوهات مطاعم ' . ($activeCity->name_ar ?? $activeCity->name)
+            : 'Restaurants in ' . $activeCity->name . ' | ' . $activeCity->name . ' Restaurant Menus';
+    } elseif ($activeCategory) {
+        $pageTitle = $isAr
+            ? ($activeCategory->name_ar ?? $activeCategory->name) . ' في مصر | منيوهات مطاعم ' . ($activeCategory->name_ar ?? $activeCategory->name)
+            : $activeCategory->name . ' Restaurants in Egypt | Menus';
+    } elseif (!empty($filters['search'])) {
+        $pageTitle = $isAr
+            ? 'نتائج البحث عن: ' . $filters['search']
+            : 'Search results for: ' . $filters['search'];
+    } else {
+        $pageTitle = $isAr ? 'تصفح منيوهات المطاعم' : 'Browse Restaurant Menus';
     }
+
+    // --- Build SEO description ---
+    if ($activeCity) {
+        $metaDesc = $isAr
+            ? 'اكتشف منيوهات مطاعم ' . ($activeCity->name_ar ?? $activeCity->name) . ' - أسعار الأكل والمشروبات والوجبات. أكثر من ' . $restaurants->total() . ' مطعم في ' . ($activeCity->name_ar ?? $activeCity->name) . '.'
+            : 'Discover restaurant menus in ' . $activeCity->name . ' – food prices, meals, and delivery. Over ' . $restaurants->total() . ' restaurants available.';
+    } elseif ($activeCategory) {
+        $metaDesc = $isAr
+            ? 'أفضل مطاعم ' . ($activeCategory->name_ar ?? $activeCategory->name) . ' في مصر - منيوهات وأسعار ' . $restaurants->total() . ' مطعم.'
+            : 'Best ' . $activeCategory->name . ' restaurants in Egypt – menus and prices for ' . $restaurants->total() . ' restaurants.';
+    } else {
+        $metaDesc = $isAr
+            ? 'تصفح منيوهات المطاعم في مصر. ابحث حسب المدينة والمنطقة والتصنيف. أكثر من ' . $restaurants->total() . ' مطعم متاح.'
+            : 'Browse restaurant menus in Egypt. Search by city, zone, and category. Over ' . $restaurants->total() . ' restaurants available.';
+    }
+
+    // --- Canonical: strip page / sort / direction / zone_id so every paginated
+    //     or sorted variant points back to the clean city/category filter URL. ---
+    $canonicalParams = [];
+    if (!empty($filters['city_id']))     $canonicalParams['city_id']     = $filters['city_id'];
+    if (!empty($filters['category_id'])) $canonicalParams['category_id'] = $filters['category_id'];
+    if (($currentLocale ?? 'ar') === 'en') $canonicalParams['lang']      = 'en';
+    $searchCanonical = url('/search') . (count($canonicalParams) ? '?' . http_build_query($canonicalParams) : '');
+
+    // --- Robots: noindex text-search results and pure sort/page variants ---
+    $shouldNoIndex = !empty($filters['search'])
+        || (!$activeCity && !$activeCategory && (request()->has('sort') || request()->has('page')));
 @endphp
 
 @section('title', $pageTitle . ' - ناكل ايه | Nakol Eh')
-@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'تصفح منيوهات المطاعم في مصر. ابحث حسب المدينة والمنطقة والتصنيف. أكثر من ' . $restaurants->total() . ' مطعم متاح.' : 'Browse restaurant menus in Egypt. Search by city, zone, and category. Over ' . $restaurants->total() . ' restaurants available.')
-@section('meta_keywords', 'تصفح مطاعم, منيوهات مطاعم مصر, browse restaurants Egypt, restaurant menus, قوائم طعام')
+@section('meta_description', $metaDesc)
+@section('meta_keywords', $activeCity
+    ? (($activeCity->name_ar ?? $activeCity->name) . ', مطاعم ' . ($activeCity->name_ar ?? $activeCity->name) . ', منيوهات ' . ($activeCity->name_ar ?? $activeCity->name) . ', restaurants ' . $activeCity->name . ', ' . $activeCity->name . ' menus')
+    : ($activeCategory
+        ? (($activeCategory->name_ar ?? $activeCategory->name) . ', مطاعم ' . ($activeCategory->name_ar ?? $activeCategory->name) . ', ' . $activeCategory->name . ' restaurants Egypt')
+        : 'تصفح مطاعم, منيوهات مطاعم مصر, browse restaurants Egypt, restaurant menus, قوائم طعام'))
+@section('canonical_url', $searchCanonical)
+@if($shouldNoIndex)
+@section('robots_meta', 'noindex, follow')
+@endif
 
 @push('structured_data')
 <!-- Structured Data: ItemList for restaurant listing -->
@@ -18,7 +70,7 @@
     "@@context": "https://schema.org",
     "@@type": "ItemList",
     "name": "{{ $pageTitle }}",
-    "description": "{{ ($currentLocale ?? 'ar') === 'ar' ? 'قائمة منيوهات المطاعم في مصر' : 'Restaurant menus list in Egypt' }}",
+    "description": "{{ $metaDesc }}",
     "numberOfItems": {{ $restaurants->total() }},
     "itemListElement": [
         @foreach($restaurants->take(10) as $index => $restaurant)

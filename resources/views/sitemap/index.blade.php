@@ -91,6 +91,58 @@
         <xhtml:link rel="alternate" hreflang="x-default" href="{{ url('/privacy-policy') }}"/>
     </url>
 
+    {{-- City Search Pages (one per city - Arabic default & English) --}}
+    @foreach ($cities as $city)
+        @php
+            $arCityLoc = url('/search') . '?city_id=' . $city->id;
+            $enCityLoc = $arCityLoc . '&lang=en';
+        @endphp
+        <url>
+            <loc>{{ $arCityLoc }}</loc>
+            <lastmod>{{ now()->toDateString() }}</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+            <xhtml:link rel="alternate" hreflang="ar"        href="{{ $arCityLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="en"        href="{{ $enCityLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="x-default" href="{{ $arCityLoc }}"/>
+        </url>
+        <url>
+            <loc>{{ $enCityLoc }}</loc>
+            <lastmod>{{ now()->toDateString() }}</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.7</priority>
+            <xhtml:link rel="alternate" hreflang="ar"        href="{{ $arCityLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="en"        href="{{ $enCityLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="x-default" href="{{ $arCityLoc }}"/>
+        </url>
+    @endforeach
+
+    {{-- Category Search Pages (one per category - Arabic default & English) --}}
+    @foreach ($categories as $category)
+        @php
+            $arCatLoc = url('/search') . '?category_id=' . $category->id;
+            $enCatLoc = $arCatLoc . '&lang=en';
+        @endphp
+        <url>
+            <loc>{{ $arCatLoc }}</loc>
+            <lastmod>{{ now()->toDateString() }}</lastmod>
+            <changefreq>weekly</changefreq>
+            <priority>0.7</priority>
+            <xhtml:link rel="alternate" hreflang="ar"        href="{{ $arCatLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="en"        href="{{ $enCatLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="x-default" href="{{ $arCatLoc }}"/>
+        </url>
+        <url>
+            <loc>{{ $enCatLoc }}</loc>
+            <lastmod>{{ now()->toDateString() }}</lastmod>
+            <changefreq>weekly</changefreq>
+            <priority>0.6</priority>
+            <xhtml:link rel="alternate" hreflang="ar"        href="{{ $arCatLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="en"        href="{{ $enCatLoc }}"/>
+            <xhtml:link rel="alternate" hreflang="x-default" href="{{ $arCatLoc }}"/>
+        </url>
+    @endforeach
+
     {{-- Restaurant Pages (both language versions) --}}
     @foreach ($restaurants as $restaurant)
         @php
