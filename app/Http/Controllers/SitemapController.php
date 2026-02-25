@@ -17,6 +17,8 @@ class SitemapController extends Controller
     public function index(): Response
     {
         $restaurants = Restaurant::whereNotNull('slug')
+            ->whereHas('menuImages')                   // only pages with actual content
+            ->where('slug', 'regexp', '^[a-zA-Z0-9_-]+$') // exclude Arabic/garbage slugs
             ->select('slug', 'updated_at', 'total_views')
             ->orderByDesc('total_views')
             ->get();

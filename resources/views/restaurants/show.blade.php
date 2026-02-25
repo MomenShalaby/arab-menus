@@ -5,6 +5,10 @@
 @section('meta_keywords', ($restaurant->name_ar ?? $restaurant->name) . ', ' . $restaurant->name . ', منيو ' . ($restaurant->name_ar ?? $restaurant->name) . ', منيو مطعم ' . ($restaurant->name_ar ?? $restaurant->name) . ', اسعار ' . ($restaurant->name_ar ?? $restaurant->name) . ', فروع ' . ($restaurant->name_ar ?? $restaurant->name) . ', ' . ($restaurant->categories->pluck('name_ar')->filter()->implode(', ') ?: ''))
 @section('og_type', 'restaurant')
 @section('og_image', $restaurant->logo_url ?? asset('images/logo.png'))
+{{-- Noindex thin pages: restaurants with no menu images have nothing useful for searchers --}}
+@if($restaurant->menuImages->isEmpty())
+@section('robots_meta', 'noindex, follow')
+@endif
 
 @push('structured_data')
 <!-- Structured Data: Restaurant -->
