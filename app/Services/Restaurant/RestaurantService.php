@@ -71,7 +71,13 @@ class RestaurantService
     public function getCategories(): Collection
     {
         return Cache::remember('categories_all', self::CACHE_TTL_MINUTES * 60, function (): Collection {
-            return Category::withCount('restaurants')
+            // Count only browsable restaurants (scraped + valid slug) so the
+            // number shown next to a category matches its search results.
+            return Category::withCount(['restaurants' => function (Builder $q): void {
+                $q->whereNotNull('last_scraped_at')
+                    ->whereNotNull('slug')
+                    ->where('slug', '!=', '');
+            }])
                 ->orderBy('name')
                 ->get();
         });
@@ -204,7 +210,13 @@ class RestaurantService
     public function getStatistics(): array
     {
         return Cache::remember('site_statistics', self::CACHE_TTL_MINUTES * 60, fn(): array => [
-            'total_restaurants' => Restaurant::count(),
+            // Public-facing count: only restaurants users can actually browse
+            // (scraped + valid slug). This is what search/featured/footer reflect,
+            // so every surface shows the same number.
+            'total_restaurants' => Restaurant::whereNotNull('last_scraped_at')
+                ->whereNotNull('slug')
+                ->where('slug', '!=', '')
+                ->count(),
             'total_cities' => City::count(),
             'total_zones' => Zone::count(),
             'total_categories' => Category::count(),
@@ -223,6 +235,8 @@ class RestaurantService
 
         return Cache::remember($cacheKey, 300, function () use ($query, $limit): array {
             return Restaurant::whereNotNull('last_scraped_at')
+                ->whereNotNull('slug')
+                ->where('slug', '!=', '')
                 ->where(function (Builder $q) use ($query): void {
                     $q->where('name', 'LIKE', "%{$query}%")
                         ->orWhere('name_ar', 'LIKE', "%{$query}%")
@@ -256,6 +270,8 @@ class RestaurantService
     public function getRandomRestaurant(array $categoryIds = [], ?int $cityId = null): ?Restaurant
     {
         $query = Restaurant::whereNotNull('last_scraped_at')
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '')
             ->whereHas('menuImages')
             ->with(['categories', 'menuImages']);
 

@@ -360,15 +360,17 @@
                     <h4 class="text-lg font-semibold text-white mb-3">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إحصائيات' : 'Stats' }}</h4>
                     @php
                         $footerStats = cache()->get('site_statistics', [
-                            'total_restaurants' => \App\Models\Restaurant::count(),
+                            'total_restaurants' => \App\Models\Restaurant::whereNotNull('last_scraped_at')
+                                ->whereNotNull('slug')
+                                ->where('slug', '!=', '')
+                                ->count(),
                             'total_cities' => \App\Models\City::count(),
                             'total_categories' => \App\Models\Category::count(),
-                            'scraped_restaurants' => \App\Models\Restaurant::whereNotNull('last_scraped_at')->count(),
                         ]);
                     @endphp
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($footerStats['scraped_restaurants'] ?? 0) }}</span>
+                            <span class="block text-primary-400 text-lg font-bold">{{ number_format($footerStats['total_restaurants'] ?? 0) }}</span>
                             <span class="text-gray-400">{{ ($currentLocale ?? 'ar') === 'ar' ? 'مطعم' : 'Restaurants' }}</span>
                         </div>
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
