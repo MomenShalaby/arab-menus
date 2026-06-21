@@ -53,13 +53,9 @@ Route::get('/api/search', [RestaurantController::class, 'liveSearch'])
 Route::get('/api/random-restaurant', [RestaurantController::class, 'randomRestaurant'])
     ->name('api.random-restaurant');
 
-// Language toggle
-Route::get('/lang/{locale}', function (string $locale) {
-    if (in_array($locale, ['ar', 'en'])) {
-        session(['locale' => $locale]);
-    }
-    return redirect()->back();
-})->name('lang.switch');
+// Language switching is handled entirely by SetLocaleMiddleware via the
+// ?lang= query param (Arabic redirects to the clean canonical URL, English
+// persists for indexing). The nav toggle links to those URLs directly.
 
 // XML Sitemap (SEO)
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');

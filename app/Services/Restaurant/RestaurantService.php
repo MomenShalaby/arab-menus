@@ -6,6 +6,7 @@ namespace App\Services\Restaurant;
 
 use App\Models\Category;
 use App\Models\City;
+use App\Models\MenuImage;
 use App\Models\Restaurant;
 use App\Models\Zone;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
 class RestaurantService
 {
     private const CACHE_TTL_MINUTES = 60;
+
     private const PER_PAGE = 24;
 
     /**
@@ -29,6 +31,7 @@ class RestaurantService
     {
         return Cache::remember('default_city_id', self::CACHE_TTL_MINUTES * 60, function (): ?int {
             $city = City::where('slug', 'tanta')->first();
+
             return $city?->id;
         });
     }
@@ -57,7 +60,7 @@ class RestaurantService
         return Cache::remember(
             "zones_city_{$cityId}",
             self::CACHE_TTL_MINUTES * 60,
-            fn(): Collection => Zone::where('city_id', $cityId)
+            fn (): Collection => Zone::where('city_id', $cityId)
                 ->orderBy('name')
                 ->get(),
         );
@@ -86,7 +89,7 @@ class RestaurantService
     /**
      * Search and filter restaurants with pagination.
      *
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      */
     public function searchRestaurants(array $filters = [], int $perPage = self::PER_PAGE): LengthAwarePaginator
     {
@@ -145,7 +148,7 @@ class RestaurantService
         return Cache::remember(
             "restaurant_{$slug}",
             self::CACHE_TTL_MINUTES * 60,
-            fn(): ?Restaurant => Restaurant::with(['menuImages', 'categories', 'cities', 'zones', 'branches'])
+            fn (): ?Restaurant => Restaurant::with(['menuImages', 'categories', 'cities', 'zones', 'branches'])
                 ->where('slug', $slug)
                 ->first(),
         );
@@ -191,7 +194,7 @@ class RestaurantService
         return Cache::remember(
             'featured_restaurants',
             self::CACHE_TTL_MINUTES * 60,
-            fn(): Collection => Restaurant::with(['categories', 'menuImages'])
+            fn (): Collection => Restaurant::with(['categories', 'menuImages'])
                 ->whereNotNull('last_scraped_at')
                 ->whereNotNull('slug')
                 ->where('slug', '!=', '')
@@ -209,7 +212,7 @@ class RestaurantService
      */
     public function getStatistics(): array
     {
-        return Cache::remember('site_statistics', self::CACHE_TTL_MINUTES * 60, fn(): array => [
+        return Cache::remember('site_statistics', self::CACHE_TTL_MINUTES * 60, fn (): array => [
             // Public-facing count: only restaurants users can actually browse
             // (scraped + valid slug). This is what search/featured/footer reflect,
             // so every surface shows the same number.
@@ -220,6 +223,7 @@ class RestaurantService
             'total_cities' => City::count(),
             'total_zones' => Zone::count(),
             'total_categories' => Category::count(),
+            'total_menu_images' => MenuImage::count(),
             'scraped_restaurants' => Restaurant::whereNotNull('last_scraped_at')->count(),
         ]);
     }
@@ -231,7 +235,7 @@ class RestaurantService
      */
     public function liveSearch(string $query, int $limit = 10): array
     {
-        $cacheKey = 'live_search_' . md5($query . '_' . $limit);
+        $cacheKey = 'live_search_'.md5($query.'_'.$limit);
 
         return Cache::remember($cacheKey, 300, function () use ($query, $limit): array {
             return Restaurant::whereNotNull('last_scraped_at')
@@ -245,14 +249,14 @@ class RestaurantService
                 ->with('categories:id,name,name_ar')
                 ->limit($limit)
                 ->get(['id', 'name', 'name_ar', 'slug', 'logo_url', 'hotline'])
-                ->map(fn(Restaurant $r) => [
+                ->map(fn (Restaurant $r) => [
                     'id' => $r->id,
                     'name' => $r->name,
                     'name_ar' => $r->name_ar,
                     'slug' => $r->slug,
                     'logo_url' => $r->logo_url,
                     'hotline' => $r->hotline,
-                    'categories' => $r->categories->map(fn($c) => [
+                    'categories' => $r->categories->map(fn ($c) => [
                         'name' => $c->name,
                         'name_ar' => $c->name_ar,
                     ]),
@@ -265,7 +269,7 @@ class RestaurantService
     /**
      * Get a random restaurant from selected categories.
      *
-     * @param array<int> $categoryIds
+     * @param  array<int>  $categoryIds
      */
     public function getRandomRestaurant(array $categoryIds = [], ?int $cityId = null): ?Restaurant
     {

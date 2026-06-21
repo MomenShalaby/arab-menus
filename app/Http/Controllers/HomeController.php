@@ -51,6 +51,7 @@ class HomeController extends Controller
         return view('nakl-eih', [
             'cities' => $this->restaurantService->getCities(),
             'categories' => $this->restaurantService->getCategories(),
+            'stats' => $this->restaurantService->getStatistics(),
         ]);
     }
 

@@ -256,11 +256,11 @@
 
                     <!-- Language Toggle -->
                     @if(($currentLocale ?? 'ar') === 'ar')
-                        <a href="{{ route('lang.switch', 'en') }}" class="flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        <a href="{{ $localeSwitchEnUrl ?? '?lang=en' }}" class="flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-colors">
                             EN 🌐
                         </a>
                     @else
-                        <a href="{{ route('lang.switch', 'ar') }}" class="flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        <a href="{{ $localeSwitchArUrl ?? '?lang=ar' }}" class="flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-colors">
                             عربي 🌐
                         </a>
                     @endif
@@ -299,9 +299,9 @@
                 <a href="{{ route('privacy') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-600 font-medium text-sm transition-colors">{{ ($currentLocale ?? 'ar') === 'ar' ? '🔒 الخصوصية' : '🔒 Privacy' }}</a>
                 <div class="pt-2 border-t border-gray-100 mt-2">
                     @if(($currentLocale ?? 'ar') === 'ar')
-                        <a href="{{ route('lang.switch', 'en') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 English</a>
+                        <a href="{{ $localeSwitchEnUrl ?? '?lang=en' }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 English</a>
                     @else
-                        <a href="{{ route('lang.switch', 'ar') }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 عربي</a>
+                        <a href="{{ $localeSwitchArUrl ?? '?lang=ar' }}" class="block px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors">🌐 عربي</a>
                     @endif
                 </div>
             </div>
@@ -359,13 +359,17 @@
                 <div>
                     <h4 class="text-lg font-semibold text-white mb-3">{{ ($currentLocale ?? 'ar') === 'ar' ? 'إحصائيات' : 'Stats' }}</h4>
                     @php
-                        $footerStats = cache()->get('site_statistics', [
+                        // Lazy default (closure) so these COUNT queries only run on a
+                        // true cache miss — otherwise they'd execute on every page load.
+                        // Shape mirrors RestaurantService::getStatistics() (same cache key).
+                        $footerStats = cache()->get('site_statistics', fn () => [
                             'total_restaurants' => \App\Models\Restaurant::whereNotNull('last_scraped_at')
                                 ->whereNotNull('slug')
                                 ->where('slug', '!=', '')
                                 ->count(),
                             'total_cities' => \App\Models\City::count(),
                             'total_categories' => \App\Models\Category::count(),
+                            'total_menu_images' => \App\Models\MenuImage::count(),
                         ]);
                     @endphp
                     <div class="grid grid-cols-2 gap-3 text-sm">
@@ -382,7 +386,7 @@
                             <span class="text-gray-400">{{ ($currentLocale ?? 'ar') === 'ar' ? 'فئة' : 'Categories' }}</span>
                         </div>
                         <div class="bg-gray-800 rounded-lg p-3 text-center">
-                            <span class="block text-accent-400 text-lg font-bold">{{ number_format(\App\Models\MenuImage::count()) }}</span>
+                            <span class="block text-accent-400 text-lg font-bold">{{ number_format($footerStats['total_menu_images'] ?? 0) }}</span>
                             <span class="text-gray-400">{{ ($currentLocale ?? 'ar') === 'ar' ? 'صورة منيو' : 'Menu Images' }}</span>
                         </div>
                     </div>

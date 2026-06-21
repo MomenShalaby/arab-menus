@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\ServiceProvider;
 use App\Models\Setting;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,18 +45,29 @@ class AppServiceProvider extends ServiceProvider
 
             // Build the two language-alternate URLs for hreflang tags.
             $queryWithoutLang = request()->except('lang');
-            $baseUrl          = request()->url();
+            $baseUrl = request()->url();
 
             $hreflangArUrl = empty($queryWithoutLang)
                 ? $baseUrl
-                : $baseUrl . '?' . http_build_query($queryWithoutLang);
+                : $baseUrl.'?'.http_build_query($queryWithoutLang);
 
-            $hreflangEnUrl = $baseUrl . '?' . http_build_query(
+            $hreflangEnUrl = $baseUrl.'?'.http_build_query(
                 array_merge($queryWithoutLang, ['lang' => 'en'])
             );
 
             $view->with('hreflangArUrl', $hreflangArUrl);
             $view->with('hreflangEnUrl', $hreflangEnUrl);
+
+            // --- Language toggle targets (keep URL and content in sync) ---
+            // Switching to English: append ?lang=en so the URL reflects the language
+            //   (SetLocaleMiddleware stores it in the session and keeps the param).
+            // Switching to Arabic: append ?lang=ar so the middleware resets the
+            //   session to Arabic, then 301-redirects to the clean canonical URL.
+            //   (Linking straight to the clean URL would NOT reset an 'en' session.)
+            $view->with('localeSwitchEnUrl', $hreflangEnUrl);
+            $view->with('localeSwitchArUrl', $baseUrl.'?'.http_build_query(
+                array_merge($queryWithoutLang, ['lang' => 'ar'])
+            ));
 
             // Share ads settings
             try {

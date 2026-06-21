@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', ($currentLocale ?? 'ar') === 'ar' ? 'ناكل ايه؟ - اختر مطعمك عشوائياً | دليل المطاعم في مصر' : 'Nakol Eh? - Random Restaurant Picker | Egypt Restaurant Guide')
-@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'مش عارف تاكل ايه؟ خلينا نساعدك! اختار من الفئات اللي بتحبها وهنختارلك مطعم عشوائي من أكتر من ' . (\App\Models\Restaurant::count()) . ' مطعم' : 'Can\'t decide what to eat? Let us help! Pick your favorite categories and we\'ll choose a random restaurant for you')
+@section('meta_description', ($currentLocale ?? 'ar') === 'ar' ? 'مش عارف تاكل ايه؟ خلينا نساعدك! اختار من الفئات اللي بتحبها وهنختارلك مطعم عشوائي من أكتر من ' . number_format($stats['total_restaurants'] ?? 0) . ' مطعم' : 'Can\'t decide what to eat? Let us help! Pick your favorite categories and we\'ll choose a random restaurant for you')
 @section('meta_keywords', 'ناكل ايه, اختيار مطعم عشوائي, random restaurant picker, مطاعم مصر, اقتراح مطعم')
 
 @push('structured_data')
