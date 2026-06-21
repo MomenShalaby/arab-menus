@@ -12,7 +12,8 @@ use App\Models\MenuImage;
 use App\Models\Restaurant;
 use App\Models\ScrapingLog;
 use App\Models\Zone;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
@@ -90,5 +91,36 @@ class AdminDashboardController extends Controller
             'noSlugCount',
             'dailyScrapedCount',
         ));
+    }
+
+    /**
+     * JSON feed of the latest scraping logs + live counters.
+     * Polled by the dashboard to keep the scraping log up to date without a reload.
+     */
+    public function logsFeed(): JsonResponse
+    {
+        $logs = ScrapingLog::orderByDesc('id')
+            ->limit(20)
+            ->get(['id', 'type', 'url', 'status', 'items_scraped', 'error_message', 'created_at'])
+            ->map(fn (ScrapingLog $log): array => [
+                'id' => $log->id,
+                'type' => $log->type,
+                'url' => (string) $log->url,
+                'status' => $log->status,
+                'items_scraped' => $log->items_scraped,
+                'error' => $log->error_message ? Str::limit($log->error_message, 200) : null,
+                'time' => $log->created_at?->diffForHumans(),
+            ]);
+
+        $since = now()->subDay();
+
+        return response()->json([
+            'logs' => $logs,
+            'counts' => [
+                'running' => ScrapingLog::where('status', 'running')->count(),
+                'completed_24h' => ScrapingLog::where('status', 'completed')->where('created_at', '>=', $since)->count(),
+                'failed_24h' => ScrapingLog::where('status', 'failed')->where('created_at', '>=', $since)->count(),
+            ],
+        ]);
     }
 }

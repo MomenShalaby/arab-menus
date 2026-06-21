@@ -87,6 +87,7 @@ class RestaurantScraper
         } catch (\Exception $e) {
             Log::error("Restaurant listing scraping failed: {$e->getMessage()}");
             $log->markFailed($e->getMessage());
+
             return [];
         }
     }
@@ -161,7 +162,7 @@ class RestaurantScraper
                 if ($catNode->count() > 0) {
                     $catText = trim($catNode->first()->text(''));
                     $categories = array_map('trim', explode(',', $catText));
-                    $categories = array_filter($categories, fn(string $c): bool => ! empty($c) && strlen($c) > 1);
+                    $categories = array_filter($categories, fn (string $c): bool => ! empty($c) && strlen($c) > 1);
                     $categories = array_values($categories);
                 }
             } catch (\Exception) {
@@ -181,7 +182,7 @@ class RestaurantScraper
                 if (empty($categories) && count($parts) > 1) {
                     $catText = trim(end($parts));
                     $categories = array_map('trim', explode(',', $catText));
-                    $categories = array_filter($categories, fn(string $c): bool => ! empty($c) && strlen($c) > 1);
+                    $categories = array_filter($categories, fn (string $c): bool => ! empty($c) && strlen($c) > 1);
                     $categories = array_values($categories);
                 }
             }
@@ -240,6 +241,7 @@ class RestaurantScraper
 
             if ($crawler === null) {
                 $log->markFailed("Failed to fetch restaurant page: {$slug}");
+
                 return null;
             }
 
@@ -262,6 +264,7 @@ class RestaurantScraper
         } catch (\Exception $e) {
             Log::error("Restaurant detail scraping failed for {$slug}: {$e->getMessage()}");
             $log->markFailed($e->getMessage());
+
             return null;
         }
     }
@@ -298,11 +301,12 @@ class RestaurantScraper
                         $ogName = trim($ogTitle->first()->attr('content') ?? '');
                         $ogName = preg_replace('/\s+(menu|hotline|delivery|egypt).*$/i', '', $ogName);
                         $ogName = rtrim(trim($ogName), ',');
-                        if (!empty($ogName) && strlen($ogName) < strlen($name)) {
+                        if (! empty($ogName) && strlen($ogName) < strlen($name)) {
                             $name = $ogName;
                         }
                     }
-                } catch (\Exception) {}
+                } catch (\Exception) {
+                }
             }
 
             if (empty($name)) {
@@ -335,7 +339,7 @@ class RestaurantScraper
                 if (empty($nameAr)) {
                     // Branch URLs look like: /kfc/كنتاكى-فرع-اسم/fried-chicken
                     // The Arabic slug is the second segment, URL-encoded
-                    if (preg_match('#/' . preg_quote($slug, '#') . '/([^/"]+)/#', $pageHtml, $branchMatch)) {
+                    if (preg_match('#/'.preg_quote($slug, '#').'/([^/"]+)/#', $pageHtml, $branchMatch)) {
                         $arSlug = urldecode($branchMatch[1]);
                         // The Arabic slug is like كنتاكى-فرع-المكان — take the first word before the dash
                         $parts = explode('-', $arSlug);
@@ -349,7 +353,7 @@ class RestaurantScraper
                                 break; // Stop at first non-Arabic part (branch location)
                             }
                         }
-                        if (!empty($arParts)) {
+                        if (! empty($arParts)) {
                             $nameAr = implode(' ', $arParts);
                         }
                     }
@@ -389,11 +393,11 @@ class RestaurantScraper
                         $phone = trim($telLink->text(''));
                         $phone = preg_replace('/[^0-9+\-\s]/', '', $phone);
                         $phone = trim($phone);
-                        if (!empty($phone) && !in_array($phone, $phones)) {
+                        if (! empty($phone) && ! in_array($phone, $phones)) {
                             $phones[] = $phone;
                         }
                     });
-                    $hotline = !empty($phones) ? implode(' - ', $phones) : null;
+                    $hotline = ! empty($phones) ? implode(' - ', $phones) : null;
                 }
             } catch (\Exception) {
                 // No hotline found
@@ -419,10 +423,10 @@ class RestaurantScraper
                 // First try: extract full-size URLs from JS/JSON arrays on the page
                 $pageHtml = $crawler->html();
                 preg_match_all('#https?://[^"\s]+/restaurants_menus/[^"\s]+#', $pageHtml, $fullMatches);
-                if (!empty($fullMatches[0])) {
+                if (! empty($fullMatches[0])) {
                     foreach ($fullMatches[0] as $url) {
                         $url = strtok($url, '?') ?: $url;
-                        if (!str_contains($url, 'restaurants_menus_s')) {
+                        if (! str_contains($url, 'restaurants_menus_s')) {
                             $menuImageUrls[] = $url;
                         }
                     }
@@ -434,7 +438,7 @@ class RestaurantScraper
                     $crawler->filter('img[src*="restaurants_menus"]')->each(
                         function (Crawler $img) use (&$allMenuSrcs): void {
                             $src = $img->attr('src') ?? '';
-                            if (!empty($src) && str_contains($src, 'restaurants_menus')) {
+                            if (! empty($src) && str_contains($src, 'restaurants_menus')) {
                                 $allMenuSrcs[] = $src;
                             }
                         }
@@ -451,7 +455,7 @@ class RestaurantScraper
                         // restaurants_menus_s/slug_menu_1_s.jpg -> restaurants_menus/slug_menu_1.jpg
                         $src = str_replace('restaurants_menus_s/', 'restaurants_menus/', $src);
                         $src = preg_replace('/_s\.(jpg|png|jpeg|webp)$/i', '.$1', $src);
-                        if (!str_starts_with($src, 'http')) {
+                        if (! str_starts_with($src, 'http')) {
                             $src = $this->httpClient->resolveUrl($src);
                         }
                         $menuImageUrls[] = $src;
@@ -490,7 +494,7 @@ class RestaurantScraper
             $branches = [];
             try {
                 // Branches are often under h5 tags with address text, followed by links
-                $crawler->filter('h5')->each(function (Crawler $h5) use (&$branches, $slug): void {
+                $crawler->filter('h5')->each(function (Crawler $h5) use (&$branches): void {
                     $address = trim($h5->text(''));
                     if (empty($address) || strlen($address) < 3) {
                         return;
@@ -551,6 +555,7 @@ class RestaurantScraper
             ]);
         } catch (\Exception $e) {
             Log::error("Failed to extract restaurant detail for {$slug}: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -634,13 +639,14 @@ class RestaurantScraper
     private function getCategoryArName(string $categoryName): ?string
     {
         $lower = strtolower(trim($categoryName));
+
         return self::CATEGORY_AR_MAP[$lower] ?? null;
     }
 
     /**
      * Persist restaurant listing data with city/zone associations.
      *
-     * @param RestaurantData[] $restaurants
+     * @param  RestaurantData[]  $restaurants
      */
     private function persistListingData(array $restaurants, string $citySlug, string $zoneSlug): void
     {
@@ -651,8 +657,8 @@ class RestaurantScraper
             $restaurant = Restaurant::updateOrCreate(
                 ['slug' => $data->slug],
                 [
-                    'name' => $data->name,
-                    'name_ar' => $data->nameAr,
+                    'name' => $this->fitColumn($data->name),
+                    'name_ar' => $this->fitColumn($data->nameAr),
                     'logo_url' => $data->logoUrl,
                     'source_url' => $data->sourceUrl,
                 ],
@@ -694,6 +700,20 @@ class RestaurantScraper
     }
 
     /**
+     * Clamp a value to the 255-char limit of string columns (name / name_ar).
+     * Occasionally the page title extraction yields an over-long string; without
+     * this the INSERT/UPDATE fails with "Data too long for column".
+     */
+    private function fitColumn(?string $value, int $max = 255): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return mb_substr($value, 0, $max);
+    }
+
+    /**
      * Persist detailed restaurant data including menu images.
      */
     private function persistRestaurantDetail(RestaurantData $data): void
@@ -701,8 +721,8 @@ class RestaurantScraper
         $restaurant = Restaurant::updateOrCreate(
             ['slug' => $data->slug],
             [
-                'name' => $data->name,
-                'name_ar' => $data->nameAr,
+                'name' => $this->fitColumn($data->name),
+                'name_ar' => $this->fitColumn($data->nameAr),
                 'logo_url' => $data->logoUrl,
                 'hotline' => $data->hotline,
                 'source_url' => $data->sourceUrl,
@@ -790,13 +810,13 @@ class RestaurantScraper
 
             MenuImage::create([
                 'restaurant_id' => $restaurant->id,
-                'original_url'  => $imageUrl,
-                'local_path'    => $stored['local_path'],
-                'alt_text'      => "{$data->name} menu {$order}",
-                'sort_order'    => $order,
-                'file_size'     => $stored['file_size'],
-                'width'         => $stored['width'],
-                'height'        => $stored['height'],
+                'original_url' => $imageUrl,
+                'local_path' => $stored['local_path'],
+                'alt_text' => "{$data->name} menu {$order}",
+                'sort_order' => $order,
+                'file_size' => $stored['file_size'],
+                'width' => $stored['width'],
+                'height' => $stored['height'],
             ]);
         }
     }
@@ -838,9 +858,9 @@ class RestaurantScraper
     {
         $meta = [
             'local_path' => null,
-            'file_size'  => strlen($contents),
-            'width'      => null,
-            'height'     => null,
+            'file_size' => strlen($contents),
+            'width' => null,
+            'height' => null,
         ];
 
         try {
@@ -853,7 +873,7 @@ class RestaurantScraper
             // Read dimensions straight from the in-memory bytes — no temp file.
             $imageInfo = @getimagesizefromstring($contents);
             if ($imageInfo !== false) {
-                $meta['width']  = $imageInfo[0];
+                $meta['width'] = $imageInfo[0];
                 $meta['height'] = $imageInfo[1];
             }
         } catch (\Exception $e) {

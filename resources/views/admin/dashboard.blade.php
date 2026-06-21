@@ -177,11 +177,22 @@
     </div>
 
     <!-- Recent Scraping Logs -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            سجل عمليات الجلب
-        </h3>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6" data-logs-feed="{{ route('admin.logs.feed') }}">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                سجل عمليات الجلب
+                <span class="flex items-center gap-1.5 text-xs font-normal text-gray-400">
+                    <span id="logs-live-dot" class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span id="logs-live-label">مباشر</span>
+                </span>
+            </h3>
+            <div class="flex items-center gap-2 text-xs">
+                <span class="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">جاري: <span id="logs-count-running">0</span></span>
+                <span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 font-medium">مكتمل (24س): <span id="logs-count-completed">0</span></span>
+                <span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 font-medium">فشل (24س): <span id="logs-count-failed">0</span></span>
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
@@ -193,7 +204,7 @@
                         <th class="pb-3 font-semibold">التاريخ</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody id="logs-tbody" class="divide-y divide-gray-50">
                     @foreach($recentLogs as $log)
                         <tr>
                             <td class="py-2.5">
@@ -205,7 +216,8 @@
                             <td class="py-2.5 max-w-[200px] truncate text-gray-600" title="{{ $log->url }}">{{ Str::limit($log->url, 40) }}</td>
                             <td class="py-2.5">
                                 <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium
-                                    {{ $log->status === 'completed' ? 'bg-green-100 text-green-700' : ($log->status === 'failed' ? 'bg-red-100 text-red-700' : ($log->status === 'running' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700')) }}">
+                                    {{ $log->status === 'completed' ? 'bg-green-100 text-green-700' : ($log->status === 'failed' ? 'bg-red-100 text-red-700' : ($log->status === 'running' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700')) }}"
+                                    @if($log->status === 'failed' && $log->error_message) title="{{ $log->error_message }}" @endif>
                                     {{ $log->status === 'completed' ? 'مكتمل' : ($log->status === 'failed' ? 'فشل' : ($log->status === 'running' ? 'جاري' : 'معلق')) }}
                                 </span>
                             </td>
@@ -218,3 +230,84 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const container = document.querySelector('[data-logs-feed]');
+    if (!container) return;
+
+    const feedUrl = container.dataset.logsFeed;
+    const tbody = document.getElementById('logs-tbody');
+    const dot = document.getElementById('logs-live-dot');
+    const label = document.getElementById('logs-live-label');
+    const POLL_MS = 5000;
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+    const truncate = (s, n) => (s && s.length > n ? s.slice(0, n) + '…' : (s || ''));
+
+    const typeClass = (t) => t === 'restaurant_detail'
+        ? 'bg-blue-100 text-blue-700'
+        : (t === 'restaurant_listing' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700');
+
+    const statusClass = (s) => ({
+        completed: 'bg-green-100 text-green-700',
+        failed: 'bg-red-100 text-red-700',
+        running: 'bg-yellow-100 text-yellow-700',
+    }[s] || 'bg-gray-100 text-gray-700');
+
+    const statusLabel = (s) => ({
+        completed: 'مكتمل', failed: 'فشل', running: 'جاري',
+    }[s] || 'معلق');
+
+    function renderRows(logs) {
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td class="py-2.5">
+                    <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ${typeClass(log.type)}">${esc(log.type)}</span>
+                </td>
+                <td class="py-2.5 max-w-[200px] truncate text-gray-600" title="${esc(log.url)}">${esc(truncate(log.url, 40))}</td>
+                <td class="py-2.5">
+                    <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusClass(log.status)}"${log.error ? ` title="${esc(log.error)}"` : ''}>${statusLabel(log.status)}</span>
+                </td>
+                <td class="py-2.5 text-gray-600">${esc(log.items_scraped)}</td>
+                <td class="py-2.5 text-gray-400 text-xs">${esc(log.time)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function setCount(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = new Intl.NumberFormat().format(val);
+    }
+
+    let timer = null;
+
+    async function poll() {
+        try {
+            const res = await fetch(feedUrl, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            renderRows(data.logs || []);
+            setCount('logs-count-running', data.counts?.running ?? 0);
+            setCount('logs-count-completed', data.counts?.completed_24h ?? 0);
+            setCount('logs-count-failed', data.counts?.failed_24h ?? 0);
+            dot.className = 'w-2 h-2 rounded-full bg-green-500 animate-pulse';
+            label.textContent = 'مباشر';
+        } catch (e) {
+            dot.className = 'w-2 h-2 rounded-full bg-gray-400';
+            label.textContent = 'غير متصل';
+        }
+    }
+
+    function start() { if (!timer) { poll(); timer = setInterval(poll, POLL_MS); } }
+    function stop() { clearInterval(timer); timer = null; }
+
+    // Pause polling while the tab is hidden to avoid needless requests.
+    document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+    start();
+})();
+</script>
+@endpush

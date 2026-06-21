@@ -71,6 +71,9 @@ Route::prefix('admin')->group(function () {
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
+        // Live scraping-log feed (polled by the dashboard via AJAX)
+        Route::get('/logs/feed', [AdminDashboardController::class, 'logsFeed'])->name('admin.logs.feed');
+
         // Restaurants CRUD (bind by ID since slug can be null)
         Route::get('/restaurants', [AdminRestaurantController::class, 'index'])->name('admin.restaurants.index');
         Route::get('/restaurants/create', [AdminRestaurantController::class, 'create'])->name('admin.restaurants.create');
