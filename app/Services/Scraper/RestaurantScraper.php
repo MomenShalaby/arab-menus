@@ -737,29 +737,67 @@ class RestaurantScraper
             );
         }
 
-        // Process menu images
+        $this->persistMenuImages($restaurant, $data);
+    }
+
+    /**
+     * Download and persist a restaurant's menu images.
+     *
+     * Optimised vs. the naive per-image approach:
+     *   - One query to fetch already-stored URLs (instead of N existence checks).
+     *   - All new images downloaded concurrently via an HTTP pool.
+     *   - A row is only created for images that actually download, so guessed
+     *     URLs that 404 no longer leave junk MenuImage records behind.
+     */
+    private function persistMenuImages(Restaurant $restaurant, RestaurantData $data): void
+    {
+        if (empty($data->menuImageUrls)) {
+            return;
+        }
+
+        // Single query: which URLs do we already have?
+        $existing = MenuImage::where('restaurant_id', $restaurant->id)
+            ->pluck('original_url')
+            ->all();
+
+        // Map order => url for only the new images, preserving original ordering.
+        $newImages = [];
         $order = 0;
         foreach ($data->menuImageUrls as $imageUrl) {
             $order++;
+            if (in_array($imageUrl, $existing, true)) {
+                continue;
+            }
+            $newImages[$order] = $imageUrl;
+        }
 
-            // Skip if already exists
-            $exists = MenuImage::where('restaurant_id', $restaurant->id)
-                ->where('original_url', $imageUrl)
-                ->exists();
+        if (empty($newImages)) {
+            return;
+        }
 
-            if ($exists) {
+        // Download every new image concurrently (keyed by sort order).
+        $downloads = $this->httpClient->downloadFiles($newImages);
+
+        foreach ($newImages as $order => $imageUrl) {
+            $contents = $downloads[$order] ?? null;
+
+            // Skip failures entirely — no junk row, next run will retry.
+            if ($contents === null) {
                 continue;
             }
 
-            $menuImage = MenuImage::create([
-                'restaurant_id' => $restaurant->id,
-                'original_url' => $imageUrl,
-                'alt_text' => "{$data->name} menu {$order}",
-                'sort_order' => $order,
-            ]);
+            $stored = $this->storeMenuImage($contents, $data->slug, $order, $imageUrl);
 
-            // Download and store image locally
-            $this->downloadMenuImage($imageUrl, $data->slug, $order, $menuImage);
+            MenuImage::create([
+                'restaurant_id' => $restaurant->id,
+                'original_url'  => $imageUrl,
+                'local_path'    => $stored['local_path'],
+                'alt_text'      => "{$data->name} menu {$order}",
+                'sort_order'    => $order,
+                'file_size'     => $stored['file_size'],
+                'width'         => $stored['width'],
+                'height'        => $stored['height'],
+            ]);
         }
     }
 
@@ -791,45 +829,37 @@ class RestaurantScraper
     }
 
     /**
-     * Download and store a menu image locally.
+     * Store already-downloaded menu image contents on the public disk and
+     * return its metadata (local path, size, dimensions).
+     *
+     * @return array{local_path: string|null, file_size: int, width: int|null, height: int|null}
      */
-    private function downloadMenuImage(
-        string $url,
-        string $slug,
-        int $order,
-        MenuImage $menuImage,
-    ): void {
+    private function storeMenuImage(string $contents, string $slug, int $order, string $url): array
+    {
+        $meta = [
+            'local_path' => null,
+            'file_size'  => strlen($contents),
+            'width'      => null,
+            'height'     => null,
+        ];
+
         try {
-            $contents = $this->httpClient->downloadFile($url);
-
-            if ($contents === null) {
-                return;
-            }
-
             $extension = pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION) ?: 'jpg';
             $localPath = "menus/{$slug}/{$slug}_menu_{$order}.{$extension}";
 
             Storage::disk('public')->put($localPath, $contents);
+            $meta['local_path'] = $localPath;
 
-            // Get image dimensions
-            $tempFile = tempnam(sys_get_temp_dir(), 'menu_');
-            file_put_contents($tempFile, $contents);
-            $imageInfo = @getimagesize($tempFile);
-            @unlink($tempFile);
-
-            $updateData = [
-                'local_path' => $localPath,
-                'file_size' => strlen($contents),
-            ];
-
+            // Read dimensions straight from the in-memory bytes — no temp file.
+            $imageInfo = @getimagesizefromstring($contents);
             if ($imageInfo !== false) {
-                $updateData['width'] = $imageInfo[0];
-                $updateData['height'] = $imageInfo[1];
+                $meta['width']  = $imageInfo[0];
+                $meta['height'] = $imageInfo[1];
             }
-
-            $menuImage->update($updateData);
         } catch (\Exception $e) {
-            Log::warning("Failed to download menu image {$url}: {$e->getMessage()}");
+            Log::warning("Failed to store menu image {$url}: {$e->getMessage()}");
         }
+
+        return $meta;
     }
 }
